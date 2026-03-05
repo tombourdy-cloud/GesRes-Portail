@@ -22,26 +22,44 @@ Application web complète de gestion des missions pour les réservistes de la ge
 ## ✅ Fonctionnalités implémentées
 
 ### Interface publique (Gendarmes)
-1. **Sélecteur de brigade** en haut de page pour filtrer les missions par localisation
-2. **Affichage des missions** sous forme de cartes avec :
-   - Numéro de mission (badge bleu)
-   - Titre et description
-   - Brigade et compagnie (bouton cliquable)
-   - Dates de début et fin
-   - Badge de priorité (haute/moyenne/normale)
-   - Compétences requises
-   - Barre de progression des effectifs (validés/en attente/libres)
-   - **Noms des gendarmes assignés** (validés et en attente)
-3. **Filtres avancés** :
-   - Par priorité (haute/moyenne/normale)
-   - Par statut (complet/places disponibles)
-   - Recherche textuelle (titre, description, compétences)
-4. **Modal d'informations brigade** :
-   - Nom, code, effectifs
-   - Adresse complète
-   - Téléphone
-   - Chef de brigade
-   - Informations de la compagnie de rattachement
+
+#### Navigation hiérarchique optimisée
+1. **Niveau 1 - Sélection Compagnie** :
+   - Cartes visuelles élégantes avec dégradés
+   - Compteur de missions par compagnie (grand format)
+   - Informations clés : commandant, téléphone, adresse
+   - Nombre de brigades rattachées
+   - Animation hover avec élévation et ombre
+
+2. **Niveau 2 - Sélection Brigade** :
+   - Cartes vertes thématiques
+   - Compteur de missions par brigade
+   - Chef de brigade, effectifs, coordonnées
+   - Bouton "Informations détaillées" pour modal
+   - Fil d'ariane pour navigation : Accueil → Compagnie
+
+3. **Niveau 3 - Liste des Missions** :
+   - **Filtres avancés** (conservés) :
+     - Par priorité (haute/moyenne/normale)
+     - Par disponibilité (places disponibles/complet)
+     - Recherche textuelle (titre, description, compétences)
+   - **Affichage missions** sous forme de cartes avec :
+     - Numéro de mission (badge bleu)
+     - Titre et description
+     - Badge de priorité (rouge/jaune/vert)
+     - Dates de début/fin et durée calculée
+     - Barre de progression des effectifs
+     - **Noms des gendarmes assignés** avec avatars circulaires
+     - Statuts : validés (vert) et en attente (jaune)
+   - Fil d'ariane : Accueil → Compagnie → Brigade
+   - Bouton retour vers brigades
+
+#### Features UX
+- **Scroll automatique** vers le haut à chaque navigation
+- **Animations fluides** : cartes qui s'élèvent au survol
+- **Design moderne** : dégradés, ombres, coins arrondis
+- **Police Inter** : professionnelle et lisible
+- **Modal brigade** : Informations complètes (brigade + compagnie)
 
 ### Interface d'administration
 
@@ -358,6 +376,16 @@ npx wrangler pages secret put JWT_SECRET --project-name webapp
 - **Antialiasing** : Rendu optimisé pour écrans haute résolution
 - **Feature settings OpenType** : Ligatures et variantes contextuelles activées
 
+### Expérience utilisateur (UX)
+- **Navigation progressive** : Découverte étape par étape (Compagnies → Brigades → Missions)
+- **Fil d'ariane cliquable** : Navigation rapide entre les niveaux
+- **Cartes interactives** : Hover effects avec élévation et ombre portée
+- **Codes couleur cohérents** : Bleu (compagnies), Vert (brigades), badges de statut
+- **Animations fluides** : Transitions de 300ms, scroll automatique
+- **Avatars visuels** : Initiales des gendarmes dans cercles colorés
+- **Compteurs en grand format** : Lisibilité immédiate du nombre de missions
+- **Design responsive** : Adaptation tablette/mobile avec grilles flexibles
+
 ---
 
 ## 🔧 Scripts npm disponibles
@@ -382,12 +410,36 @@ npm run test           # Test curl de l'API
 ## 📝 Guide d'utilisation
 
 ### Pour les gendarmes (interface publique)
-1. Accéder à la page d'accueil
-2. Sélectionner une brigade dans le menu déroulant (optionnel)
-3. Utiliser les filtres (priorité, statut, recherche)
-4. Consulter les missions disponibles
-5. Cliquer sur le bouton brigade pour voir les informations du lieu
-6. Noter les gendarmes déjà assignés sur chaque mission
+
+**Workflow de navigation optimisé** :
+
+1. **Page d'accueil - Sélection Compagnie** :
+   - Visualiser les 4 compagnies sous forme de cartes élégantes
+   - Voir le nombre de missions par compagnie
+   - Voir les informations de contact de chaque compagnie
+   - Cliquer sur une carte pour accéder aux brigades
+
+2. **Vue Brigades** :
+   - Voir les brigades de la compagnie sélectionnée
+   - Consulter le nombre de missions par brigade
+   - Accéder aux informations détaillées via le bouton en bas de carte
+   - Cliquer sur une brigade pour voir ses missions
+   - Utiliser le fil d'ariane pour revenir aux compagnies
+
+3. **Vue Missions** :
+   - Consulter uniquement les missions de la brigade sélectionnée
+   - **Utiliser les filtres** :
+     - Priorité (haute/moyenne/normale)
+     - Disponibilité (places disponibles/complet)
+     - Recherche textuelle
+   - Voir les détails de chaque mission :
+     - Numéro, titre, description
+     - Dates et durée
+     - Compétences requises
+     - Progression des effectifs
+     - **Noms et grades des gendarmes déjà assignés**
+   - Cliquer sur "Informations brigade" pour voir coordonnées complètes
+   - Utiliser le fil d'ariane pour naviguer : Accueil → Compagnie → Brigade
 
 ### Pour les administrateurs
 1. Se connecter via `/login` (admin/admin123)
@@ -535,6 +587,15 @@ npm run db:reset
 ---
 
 ## 📅 Historique des versions
+
+### Version 3.2 (2026-03-05)
+- ✅ **Navigation hiérarchique publique** : Compagnies → Brigades → Missions (comme interface admin)
+- ✅ **Design moderne** : Cartes avec dégradés, animations hover, élévation au survol
+- ✅ **Fil d'ariane** : Navigation visuelle avec breadcrumb cliquable
+- ✅ **Filtres conservés** : Priorité, disponibilité, recherche (uniquement dans vue missions)
+- ✅ **Avatars gendarmes** : Initiales dans cercles colorés
+- ✅ **Police Inter** : Remplacement de Marianne pour conformité légale
+- ✅ **Scroll automatique** : Retour en haut de page à chaque navigation
 
 ### Version 3.1 (2026-03-05)
 - ✅ **Liste déroulante des grades** : 15 grades officiels de la gendarmerie (Gendarme à Général)
