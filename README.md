@@ -1,8 +1,8 @@
-# Gestion des Missions - Réservistes Gendarmerie
+# GesRes - Gestion des Missions Réserve
 
 ## 📋 Vue d'ensemble du projet
 
-Application web complète de gestion des missions pour les réservistes de la gendarmerie nationale. Elle permet aux gendarmes de consulter les missions disponibles et aux administrateurs de gérer l'ensemble du système (missions, affectations, brigades, compagnies, gendarmes).
+**GesRes** (Gestion des Missions Réserve) est une application web complète de gestion des missions pour les réservistes de la gendarmerie nationale. Elle permet aux gendarmes de consulter les missions disponibles et aux administrateurs de gérer l'ensemble du système (missions, affectations, brigades, compagnies, gendarmes).
 
 ---
 
@@ -100,11 +100,11 @@ Application web complète de gestion des missions pour les réservistes de la ge
 - **Liste complète** avec matricule, nom, grade, spécialité, contact
 - **Badge** indiquant le nombre de missions actives
 - **Création** de nouveaux gendarmes avec :
-  - **Grades officiels** (liste déroulante) :
-    - Gendarme
+  - **Grades officiels** (liste déroulante, dans l'ordre hiérarchique) :
     - Brigadier
     - Brigadier-Chef
     - Maréchal-des-logis
+    - **Gendarme** ← (placé ici par choix organisationnel)
     - Maréchal-des-logis-Chef
     - Adjudant
     - Adjudant-Chef
@@ -121,11 +121,13 @@ Application web complète de gestion des missions pour les réservistes de la ge
 
 #### 📍 Gestion des Lieux
 - Organisation hiérarchique : **Compagnies → Brigades**
-- **Onglet "Nouveau lieu"** permettant de :
+- **Onglet "Compagnies & Brigades"** permettant de :
   - Créer/modifier/supprimer des compagnies
   - Créer/modifier/supprimer des brigades
   - Rattacher les brigades aux compagnies
-- Affichage des relations hiérarchiques
+- **Champs compagnies** : nom, code, adresse, téléphone, email, commandant
+- **Champs brigades** : nom, code, adresse, téléphone, email, compagnie de rattachement
+- Affichage des relations hiérarchiques avec compteur de brigades par compagnie
 
 #### 🎖️ Gestion des Affectations
 - Visualisation par mission des effectifs requis
@@ -155,7 +157,8 @@ Application web complète de gestion des missions pour les réservistes de la ge
 - `id` (PK), `nom`, `code`, `adresse`, `telephone`, `email`, `commandant`, `created_at`
 
 #### Table `brigades`
-- `id` (PK), `compagnie_id` (FK → compagnies), `nom`, `code`, `adresse`, `telephone`, `email`, `effectifs`, `chef_brigade`, `latitude`, `longitude`, `created_at`
+- `id` (PK), `compagnie_id` (FK → compagnies), `nom`, `code`, `adresse`, `telephone`, `email`, `latitude`, `longitude`, `created_at`
+- Note : Les champs `effectifs` et `chef_brigade` ont été dépréciés (NULL)
 
 #### Table `missions`
 - `id` (PK), `numero_mission` (UNIQUE), `titre`, `description`, `lieu`, `brigade_id` (FK → brigades), `date_debut`, `date_fin`, `effectifs_requis`, `competences_requises`, `priorite`, `created_at`
@@ -587,6 +590,13 @@ npm run db:reset
 ---
 
 ## 📅 Historique des versions
+
+### Version 3.3 (2026-03-05)
+- ✅ **Correction modals** : Fermeture par croix X fonctionnelle sur tous les modals
+- ✅ **Simplification brigades** : Suppression des champs "effectifs" et "chef de brigade"
+- ✅ **Renommage** : Le site s'appelle maintenant "GesRes - Gestion des Missions Réserve"
+- ✅ **Ordre grades** : Gendarme placé après Maréchal-des-logis dans la liste déroulante
+- ✅ **Migration DB** : Mise à NULL des colonnes dépréciées (effectifs, chef_brigade)
 
 ### Version 3.2 (2026-03-05)
 - ✅ **Navigation hiérarchique publique** : Compagnies → Brigades → Missions (comme interface admin)
