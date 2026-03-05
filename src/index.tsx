@@ -16,7 +16,7 @@ app.get('/login', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Connexion - Administration</title>
+        <title>Connexion - GesRes</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <link href="/static/style.css" rel="stylesheet">
@@ -79,7 +79,7 @@ app.get('/', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Gestion des Missions - Réserve Gendarmerie</title>
+        <title>GesRes - Gestion des Missions Réserve</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <link href="/static/style.css" rel="stylesheet">
@@ -91,7 +91,7 @@ app.get('/', (c) => {
                     <div class="flex items-center space-x-3">
                         <img id="nav-logo" src="/static/default-logo.png" alt="Logo" class="h-12 w-12 object-contain bg-white rounded-lg p-1 shadow-md">
                         <div>
-                            <h1 class="text-xl font-bold">Missions Réserve Gendarmerie</h1>
+                            <h1 class="text-xl font-bold">GesRes - Gestion des Missions Réserve</h1>
                             <p class="text-xs text-blue-200">Portail des missions disponibles</p>
                         </div>
                     </div>
@@ -151,7 +151,7 @@ app.get('/admin', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Administration - Gestion des Missions</title>
+        <title>Administration - GesRes</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <link href="/static/style.css" rel="stylesheet">
@@ -162,7 +162,7 @@ app.get('/admin', (c) => {
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <img id="nav-logo" src="/static/default-logo.png" alt="Logo" class="h-10 w-10 object-contain bg-white rounded p-1 cursor-pointer" onclick="showLogoUploadModal()">
-                        <h1 class="text-xl font-bold">Administration des Missions</h1>
+                        <h1 class="text-xl font-bold">GesRes - Administration</h1>
                     </div>
                     <div class="flex items-center space-x-4">
                         <span id="user-info" class="text-sm"></span>

@@ -194,14 +194,6 @@ function renderBrigades() {
             
             <div class="space-y-2 text-sm text-gray-600">
               <div class="flex items-start gap-2">
-                <i class="fas fa-user text-green-400 w-5 mt-0.5"></i>
-                <span class="flex-1">${b.chef_brigade}</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <i class="fas fa-users text-green-400 w-5 mt-0.5"></i>
-                <span>${b.effectifs} gendarmes</span>
-              </div>
-              <div class="flex items-start gap-2">
                 <i class="fas fa-phone text-green-400 w-5 mt-0.5"></i>
                 <span>${b.telephone}</span>
               </div>
@@ -543,14 +535,6 @@ function showBrigadeInfo(brigadeId) {
           <span class="text-sm font-mono bg-green-200 text-green-800 px-2 py-1 rounded">${brigade.code}</span>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          <div>
-            <div class="text-gray-600 mb-1"><i class="fas fa-user w-5 mr-2"></i><strong>Chef:</strong></div>
-            <div class="ml-7">${brigade.chef_brigade}</div>
-          </div>
-          <div>
-            <div class="text-gray-600 mb-1"><i class="fas fa-users w-5 mr-2"></i><strong>Effectifs:</strong></div>
-            <div class="ml-7">${brigade.effectifs} gendarmes</div>
-          </div>
           <div class="md:col-span-2">
             <div class="text-gray-600 mb-1"><i class="fas fa-map-marker-alt w-5 mr-2"></i><strong>Adresse:</strong></div>
             <div class="ml-7">${brigade.adresse}</div>

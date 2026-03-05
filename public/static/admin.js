@@ -445,9 +445,8 @@ function renderAdminLieux() {
                     <i class="fas fa-building"></i> ${b.compagnie_nom} (${b.compagnie_code})
                   </div>
                   <div class="text-sm text-gray-600 space-y-1">
-                    <div><i class="fas fa-user text-gray-400 w-4"></i> ${b.chef_brigade}</div>
-                    <div><i class="fas fa-users text-gray-400 w-4"></i> ${b.effectifs} gendarmes</div>
                     <div><i class="fas fa-phone text-gray-400 w-4"></i> ${b.telephone}</div>
+                    <div><i class="fas fa-map-marker-alt text-gray-400 w-4"></i> ${b.adresse.substring(0, 40)}...</div>
                   </div>
                 </div>
                 <div class="flex gap-2">
@@ -573,8 +572,6 @@ function editBrigade(brigadeId) {
   document.getElementById('brigade-adresse').value = brigade.adresse
   document.getElementById('brigade-telephone').value = brigade.telephone
   document.getElementById('brigade-email').value = brigade.email || ''
-  document.getElementById('brigade-effectifs').value = brigade.effectifs
-  document.getElementById('brigade-chef').value = brigade.chef_brigade
   
   document.getElementById('modal-brigade').classList.remove('hidden')
 }
@@ -737,13 +734,13 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Afficher l'onglet missions par défaut
   renderCompagnieCards()
   
-  // Inject modals into page
+  // Inject modals into page (AVANT les event listeners)
   injectModals()
   
   // Logout
   document.getElementById('logout-btn').addEventListener('click', logout)
   
-  // Close modals
+  // Close modals (APRÈS injection)
   document.getElementById('close-modal-mission').addEventListener('click', () => {
     document.getElementById('modal-mission').classList.add('hidden')
   })
@@ -831,9 +828,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       code: document.getElementById('brigade-code').value,
       adresse: document.getElementById('brigade-adresse').value,
       telephone: document.getElementById('brigade-telephone').value,
-      email: document.getElementById('brigade-email').value || null,
-      effectifs: parseInt(document.getElementById('brigade-effectifs').value),
-      chef_brigade: document.getElementById('brigade-chef').value
+      email: document.getElementById('brigade-email').value || null
     }
     
     try {
@@ -1135,16 +1130,6 @@ function injectModals() {
               <input type="email" id="brigade-email"
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
-            <div>
-              <label class="block text-sm font-medium mb-2">Effectifs *</label>
-              <input type="number" id="brigade-effectifs" required min="1" value="20"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2">Chef de brigade *</label>
-              <input type="text" id="brigade-chef" required
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
           </div>
           <div class="mt-6 flex justify-end space-x-3">
             <button type="button" onclick="document.getElementById('modal-brigade').classList.add('hidden')"
@@ -1180,10 +1165,10 @@ function injectModals() {
               <select id="gendarme-grade" required
                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
                 <option value="">-- Sélectionnez un grade --</option>
-                <option value="Gendarme">Gendarme</option>
                 <option value="Brigadier">Brigadier</option>
                 <option value="Brigadier-Chef">Brigadier-Chef</option>
                 <option value="Maréchal-des-logis">Maréchal-des-logis</option>
+                <option value="Gendarme">Gendarme</option>
                 <option value="Maréchal-des-logis-Chef">Maréchal-des-logis-Chef</option>
                 <option value="Adjudant">Adjudant</option>
                 <option value="Adjudant-Chef">Adjudant-Chef</option>
