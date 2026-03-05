@@ -19,6 +19,7 @@ app.get('/login', (c) => {
         <title>Connexion - Administration</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="/static/style.css" rel="stylesheet">
     </head>
     <body class="bg-gradient-to-br from-blue-900 to-blue-700 min-h-screen flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">

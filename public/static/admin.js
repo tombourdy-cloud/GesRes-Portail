@@ -39,9 +39,18 @@ async function loadLogo() {
 
 async function loadMissions() {
   try {
-    const response = await axios.get('/api/missions')
-    allMissions = response.data
+    // Charger en parallèle missions, brigades et compagnies pour optimiser
+    const [missionsRes, brigadesRes, compagniesRes] = await Promise.all([
+      axios.get('/api/missions'),
+      axios.get('/api/brigades'),
+      axios.get('/api/compagnies')
+    ])
+    
+    allMissions = missionsRes.data
+    allBrigades = brigadesRes.data
+    allCompagnies = compagniesRes.data
     filteredMissions = allMissions
+    
     renderCompagnieCards()
   } catch (error) {
     console.error('Erreur:', error)
@@ -71,6 +80,28 @@ async function loadBrigades() {
     renderAdminLieux()
   } catch (error) {
     console.error('Erreur:', error)
+  }
+}
+
+// Charger toutes les données en une seule fois (optimisation)
+async function loadAllData() {
+  try {
+    const [missionsRes, brigadesRes, compagniesRes, gendarmesRes] = await Promise.all([
+      axios.get('/api/missions'),
+      axios.get('/api/brigades'),
+      axios.get('/api/compagnies'),
+      axios.get('/api/gendarmes')
+    ])
+    
+    allMissions = missionsRes.data
+    allBrigades = brigadesRes.data
+    allCompagnies = compagniesRes.data
+    allGendarmes = gendarmesRes.data
+    filteredMissions = allMissions
+    filteredGendarmes = allGendarmes
+  } catch (error) {
+    console.error('Erreur chargement données:', error)
+    throw error
   }
 }
 
@@ -128,21 +159,21 @@ function renderCompagnieSelection(missionsByCompagnie) {
         const data = missionsByCompagnie[c.id]
         return `
           <div onclick="selectCompagnie(${c.id})" 
-               class="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-500 hover:shadow-lg cursor-pointer transition-all duration-200">
+               class="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-500 hover:shadow-lg cursor-pointer transition-all duration-200 card-hover">
             <div class="flex items-start justify-between mb-3">
               <div>
                 <h4 class="font-bold text-gray-900 text-lg">${c.nom}</h4>
-                <span class="inline-block text-xs font-mono bg-gray-100 px-2 py-1 rounded mt-1">${c.code}</span>
+                <span class="inline-block text-xs font-mono bg-blue-50 text-blue-700 px-2 py-1 rounded mt-1">${c.code}</span>
               </div>
               <div class="text-right">
-                <div class="text-2xl font-bold text-blue-600">${data.count}</div>
-                <div class="text-xs text-gray-500">missions</div>
+                <div class="text-3xl font-bold text-blue-600">${data.count}</div>
+                <div class="text-xs text-gray-500">mission${data.count > 1 ? 's' : ''}</div>
               </div>
             </div>
             <div class="text-sm text-gray-600 space-y-1">
-              <div><i class="fas fa-user-tie text-gray-400 w-4"></i> ${c.commandant || 'N/A'}</div>
-              <div><i class="fas fa-phone text-gray-400 w-4"></i> ${c.telephone}</div>
-              <div><i class="fas fa-map-marker-alt text-gray-400 w-4"></i> ${c.adresse}</div>
+              <div><i class="fas fa-user-tie text-blue-400 w-4 mr-1"></i> ${c.commandant || 'N/A'}</div>
+              <div><i class="fas fa-phone text-blue-400 w-4 mr-1"></i> ${c.telephone}</div>
+              <div><i class="fas fa-map-marker-alt text-blue-400 w-4 mr-1"></i> ${c.adresse.substring(0, 40)}${c.adresse.length > 40 ? '...' : ''}</div>
             </div>
           </div>
         `
@@ -170,22 +201,22 @@ function renderBrigadeSelection() {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       ${brigadesInCompagnie.map(b => `
         <div onclick="selectBrigade(${b.id})" 
-             class="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-green-500 hover:shadow-lg cursor-pointer transition-all duration-200">
+             class="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-green-500 hover:shadow-lg cursor-pointer transition-all duration-200 card-hover">
           <div class="flex items-start justify-between mb-3">
             <div>
               <h4 class="font-bold text-gray-900 text-lg">${b.nom}</h4>
-              <span class="inline-block text-xs font-mono bg-gray-100 px-2 py-1 rounded mt-1">${b.code}</span>
+              <span class="inline-block text-xs font-mono bg-green-50 text-green-700 px-2 py-1 rounded mt-1">${b.code}</span>
             </div>
             <div class="text-right">
-              <div class="text-2xl font-bold text-green-600">${missionsByBrigade[b.id]}</div>
-              <div class="text-xs text-gray-500">missions</div>
+              <div class="text-3xl font-bold text-green-600">${missionsByBrigade[b.id]}</div>
+              <div class="text-xs text-gray-500">mission${missionsByBrigade[b.id] > 1 ? 's' : ''}</div>
             </div>
           </div>
           <div class="text-sm text-gray-600 space-y-1">
-            <div><i class="fas fa-user text-gray-400 w-4"></i> ${b.chef_brigade}</div>
-            <div><i class="fas fa-users text-gray-400 w-4"></i> ${b.effectifs} gendarmes</div>
-            <div><i class="fas fa-phone text-gray-400 w-4"></i> ${b.telephone}</div>
-            <div><i class="fas fa-map-marker-alt text-gray-400 w-4"></i> ${b.adresse}</div>
+            <div><i class="fas fa-user text-green-400 w-4 mr-1"></i> ${b.chef_brigade}</div>
+            <div><i class="fas fa-users text-green-400 w-4 mr-1"></i> ${b.effectifs} gendarmes</div>
+            <div><i class="fas fa-phone text-green-400 w-4 mr-1"></i> ${b.telephone}</div>
+            <div><i class="fas fa-map-marker-alt text-green-400 w-4 mr-1"></i> ${b.adresse.substring(0, 40)}${b.adresse.length > 40 ? '...' : ''}</div>
           </div>
         </div>
       `).join('')}
@@ -478,7 +509,10 @@ async function deleteMission(missionId) {
   if (!confirm('Confirmer la suppression de cette mission ?')) return
   try {
     await axios.delete(`/api/missions/${missionId}`)
-    await loadMissions()
+    // Recharger seulement les missions
+    const response = await axios.get('/api/missions')
+    allMissions = response.data
+    renderCompagnieCards()
     alert('Mission supprimée')
   } catch (error) {
     alert('Erreur suppression: ' + error.message)
@@ -679,12 +713,13 @@ function switchTab(tabName) {
   document.querySelectorAll('[id^="content-"]').forEach(el => el.classList.add('hidden'))
   document.getElementById(`content-${tabName}`).classList.remove('hidden')
   
+  // Utiliser les données déjà chargées (pas de rechargement)
   if (tabName === 'missions') {
-    loadMissions()
+    renderCompagnieCards()
   } else if (tabName === 'gendarmes') {
-    loadGendarmes()
+    renderAdminGendarmes(filteredGendarmes)
   } else if (tabName === 'lieux') {
-    loadBrigades()
+    renderAdminLieux()
   }
 }
 
@@ -693,8 +728,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   const authenticated = await checkAuth()
   if (!authenticated) return
   
-  loadLogo()
-  loadMissions()
+  // Précharger toutes les données en parallèle pour optimiser
+  await Promise.all([
+    loadLogo(),
+    loadAllData()
+  ])
+  
+  // Afficher l'onglet missions par défaut
+  renderCompagnieCards()
   
   // Inject modals into page
   injectModals()
@@ -743,7 +784,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         alert('Mission créée avec succès')
       }
       document.getElementById('modal-mission').classList.add('hidden')
-      await loadMissions()
+      // Recharger seulement les missions
+      const response = await axios.get('/api/missions')
+      allMissions = response.data
+      renderCompagnieCards()
     } catch (error) {
       alert('Erreur: ' + error.message)
     }
@@ -764,7 +808,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
       await axios.post('/api/compagnies', data)
       document.getElementById('modal-compagnie').classList.add('hidden')
-      await loadBrigades()
+      // Recharger compagnies et brigades
+      const [compagniesRes, brigadesRes] = await Promise.all([
+        axios.get('/api/compagnies'),
+        axios.get('/api/brigades')
+      ])
+      allCompagnies = compagniesRes.data
+      allBrigades = brigadesRes.data
+      renderAdminLieux()
       alert('Compagnie créée')
     } catch (error) {
       alert('Erreur: ' + error.message)
@@ -788,7 +839,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
       await axios.post('/api/brigades', data)
       document.getElementById('modal-brigade').classList.add('hidden')
-      await loadBrigades()
+      // Recharger seulement les brigades
+      const response = await axios.get('/api/brigades')
+      allBrigades = response.data
+      renderAdminLieux()
       alert('Brigade créée')
     } catch (error) {
       alert('Erreur: ' + error.message)
@@ -811,7 +865,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
       await axios.post('/api/gendarmes', data)
       document.getElementById('modal-gendarme').classList.add('hidden')
-      await loadGendarmes()
+      // Recharger seulement les gendarmes
+      const response = await axios.get('/api/gendarmes')
+      allGendarmes = response.data
+      filteredGendarmes = allGendarmes
+      renderAdminGendarmes(filteredGendarmes)
       alert('Gendarme ajouté')
     } catch (error) {
       alert('Erreur: ' + error.message)
@@ -862,7 +920,10 @@ async function confirmAssign(assignationId, missionId) {
       statut: 'en_attente' 
     })
     await viewAssignations(missionId)
-    await loadMissions()
+    // Recharger missions
+    const response = await axios.get('/api/missions')
+    allMissions = response.data
+    renderCompagnieCards()
   } catch (error) {
     alert('Erreur: ' + error.message)
   }
@@ -873,7 +934,10 @@ async function validateAssignation(assignationId, gendarmeId, missionId) {
   try {
     await axios.put(`/api/assignations/${assignationId}`, { statut: 'valide' })
     await viewAssignations(missionId)
-    await loadMissions()
+    // Recharger missions
+    const response = await axios.get('/api/missions')
+    allMissions = response.data
+    renderCompagnieCards()
   } catch (error) {
     alert('Erreur: ' + error.message)
   }
@@ -884,7 +948,10 @@ async function liberateAssignation(assignationId, missionId) {
   try {
     await axios.put(`/api/assignations/${assignationId}`, { statut: 'libre', gendarme_id: null })
     await viewAssignations(missionId)
-    await loadMissions()
+    // Recharger missions
+    const response = await axios.get('/api/missions')
+    allMissions = response.data
+    renderCompagnieCards()
   } catch (error) {
     alert('Erreur: ' + error.message)
   }
@@ -1110,8 +1177,25 @@ function injectModals() {
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Grade *</label>
-              <input type="text" id="gendarme-grade" required placeholder="Gendarme"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+              <select id="gendarme-grade" required
+                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">-- Sélectionnez un grade --</option>
+                <option value="Gendarme">Gendarme</option>
+                <option value="Brigadier">Brigadier</option>
+                <option value="Brigadier-Chef">Brigadier-Chef</option>
+                <option value="Maréchal-des-logis">Maréchal-des-logis</option>
+                <option value="Maréchal-des-logis-Chef">Maréchal-des-logis-Chef</option>
+                <option value="Adjudant">Adjudant</option>
+                <option value="Adjudant-Chef">Adjudant-Chef</option>
+                <option value="Major">Major</option>
+                <option value="Sous-Lieutenant">Sous-Lieutenant</option>
+                <option value="Lieutenant">Lieutenant</option>
+                <option value="Capitaine">Capitaine</option>
+                <option value="Commandant">Commandant</option>
+                <option value="Lieutenant-Colonel">Lieutenant-Colonel</option>
+                <option value="Colonel">Colonel</option>
+                <option value="Général">Général</option>
+              </select>
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Nom *</label>
