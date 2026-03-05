@@ -2,6 +2,36 @@
 dayjs.locale('fr')
 
 let allMissions = []
+let allBrigades = []
+let selectedBrigadeId = null
+
+// Charger le logo personnalisé
+async function loadLogo() {
+  try {
+    const response = await axios.get('/api/config/logo_url')
+    if (response.data.value) {
+      document.getElementById('nav-logo').src = response.data.value
+    }
+  } catch (error) {
+    console.error('Erreur chargement logo:', error)
+  }
+}
+
+// Charger les brigades
+async function loadBrigades() {
+  try {
+    const response = await axios.get('/api/brigades')
+    allBrigades = response.data
+    
+    const selector = document.getElementById('brigade-selector')
+    selector.innerHTML = '<option value="">Toutes les brigades</option>' +
+      allBrigades.map(b => `
+        <option value="${b.id}">${b.compagnie_nom} - ${b.nom} (${b.code})</option>
+      `).join('')
+  } catch (error) {
+    console.error('Erreur chargement brigades:', error)
+  }
+}
 
 // Charger les statistiques
 async function loadStats() {
@@ -21,7 +51,12 @@ async function loadStats() {
 // Charger les missions
 async function loadMissions() {
   try {
-    const response = await axios.get('/api/missions')
+    let url = '/api/missions'
+    if (selectedBrigadeId) {
+      url += `?brigade_id=${selectedBrigadeId}`
+    }
+    
+    const response = await axios.get(url)
     allMissions = response.data
     renderMissions(allMissions)
   } catch (error) {
@@ -43,7 +78,7 @@ function renderMissions(missions) {
     container.innerHTML = `
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
         <i class="fas fa-inbox text-4xl text-gray-400 mb-2"></i>
-        <p class="text-gray-500">Aucune mission disponible</p>
+        <p class="text-gray-500">Aucune mission disponible pour cette brigade</p>
       </div>
     `
     return
@@ -56,15 +91,21 @@ function renderMissions(missions) {
     const progressPct = Math.round((mission.effectifs_assignes / mission.effectifs_requis) * 100)
     
     return `
-      <div class="bg-white rounded-lg shadow-lg p-6 priority-${mission.priorite}">
+      <div class="bg-white rounded-lg shadow-lg p-6 priority-${mission.priorite} hover:shadow-xl transition-shadow">
         <div class="flex justify-between items-start mb-4">
-          <div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">${mission.titre}</h3>
-            <div class="flex space-x-4 text-sm text-gray-600">
-              <span><i class="fas fa-map-marker-alt mr-1"></i>${mission.lieu}</span>
+          <div class="flex-1">
+            <div class="flex items-center space-x-3 mb-2">
+              <span class="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-mono rounded">${mission.numero_mission}</span>
+              <h3 class="text-xl font-bold text-gray-800">${mission.titre}</h3>
+            </div>
+            <div class="flex flex-wrap gap-3 text-sm text-gray-600 mb-2">
+              <button onclick="showBrigadeInfoById(${mission.brigade_id})" class="hover:text-blue-600 hover:underline">
+                <i class="fas fa-map-marker-alt mr-1"></i>${mission.brigade_nom || mission.lieu}
+              </button>
               <span><i class="fas fa-calendar mr-1"></i>${dateDebut}</span>
               <span><i class="fas fa-clock mr-1"></i>jusqu'au ${dateFin}</span>
             </div>
+            ${mission.brigade_code ? `<div class="text-xs text-gray-500">Brigade: ${mission.brigade_code} - ${mission.compagnie_nom}</div>` : ''}
           </div>
           <span class="px-3 py-1 rounded text-sm font-medium ${getPriorityClass(mission.priorite)}">
             ${getPriorityLabel(mission.priorite)}
@@ -126,6 +167,86 @@ function getPriorityLabel(priorite) {
   return labels[priorite] || 'Normale'
 }
 
+// Afficher les informations d'une brigade
+async function showBrigadeInfoById(brigadeId) {
+  if (!brigadeId) return
+  
+  try {
+    const response = await axios.get(`/api/brigades/${brigadeId}`)
+    const brigade = response.data
+    
+    document.getElementById('brigade-info-titre').textContent = brigade.nom
+    document.getElementById('brigade-info-content').innerHTML = `
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Code Brigade</label>
+            <p class="text-gray-900 font-mono">${brigade.code}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Effectifs</label>
+            <p class="text-gray-900">${brigade.effectifs || 0} gendarmes</p>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Adresse</label>
+          <p class="text-gray-900">${brigade.adresse}</p>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Téléphone</label>
+            <p class="text-gray-900">${brigade.telephone || '-'}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Chef de Brigade</label>
+            <p class="text-gray-900">${brigade.chef_brigade || '-'}</p>
+          </div>
+        </div>
+        
+        <div class="border-t pt-4 mt-4">
+          <h3 class="font-bold text-lg mb-2">Compagnie de rattachement</h3>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Nom</label>
+            <p class="text-gray-900">${brigade.compagnie_nom}</p>
+          </div>
+          <div class="mt-2">
+            <label class="block text-sm font-medium text-gray-700">Commandant</label>
+            <p class="text-gray-900">${brigade.compagnie_commandant || '-'}</p>
+          </div>
+          <div class="mt-2">
+            <label class="block text-sm font-medium text-gray-700">Adresse Compagnie</label>
+            <p class="text-gray-900">${brigade.compagnie_adresse || '-'}</p>
+          </div>
+        </div>
+      </div>
+    `
+    
+    document.getElementById('modal-brigade-info').classList.remove('hidden')
+  } catch (error) {
+    console.error('Erreur chargement brigade:', error)
+    alert('Erreur lors du chargement des informations de la brigade')
+  }
+}
+
+function showBrigadeInfo() {
+  if (selectedBrigadeId) {
+    showBrigadeInfoById(selectedBrigadeId)
+  }
+}
+
+function hideBrigadeInfo() {
+  document.getElementById('modal-brigade-info').classList.add('hidden')
+}
+
+// Sélecteur de brigade
+document.getElementById('brigade-selector')?.addEventListener('change', (e) => {
+  selectedBrigadeId = e.target.value || null
+  document.getElementById('btn-info-brigade').disabled = !selectedBrigadeId
+  loadMissions()
+})
+
 // Filtres
 document.getElementById('filter-priorite')?.addEventListener('change', applyFilters)
 document.getElementById('filter-statut')?.addEventListener('change', applyFilters)
@@ -138,12 +259,10 @@ function applyFilters() {
   
   let filtered = allMissions
   
-  // Filtre priorité
   if (priorite) {
     filtered = filtered.filter(m => m.priorite === priorite)
   }
   
-  // Filtre statut
   if (statut === 'complet') {
     filtered = filtered.filter(m => m.effectifs_assignes === m.effectifs_requis)
   } else if (statut === 'partiel') {
@@ -152,12 +271,12 @@ function applyFilters() {
     filtered = filtered.filter(m => m.places_libres > 0)
   }
   
-  // Filtre recherche
   if (search) {
     filtered = filtered.filter(m => 
       m.titre.toLowerCase().includes(search) ||
       m.description.toLowerCase().includes(search) ||
-      m.lieu.toLowerCase().includes(search) ||
+      m.numero_mission.toLowerCase().includes(search) ||
+      (m.brigade_nom && m.brigade_nom.toLowerCase().includes(search)) ||
       (m.competences_requises && m.competences_requises.toLowerCase().includes(search))
     )
   }
@@ -167,6 +286,8 @@ function applyFilters() {
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
+  loadLogo()
+  loadBrigades()
   loadStats()
   loadMissions()
 })
