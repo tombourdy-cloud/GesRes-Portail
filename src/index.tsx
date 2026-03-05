@@ -85,18 +85,21 @@ app.get('/', (c) => {
         <link href="/static/style.css" rel="stylesheet">
     </head>
     <body class="bg-gray-50">
-        <nav class="bg-blue-900 text-white shadow-lg">
+        <nav class="bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-lg">
             <div class="container mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <img id="nav-logo" src="/static/default-logo.png" alt="Logo" class="h-10 w-10 object-contain bg-white rounded p-1">
-                        <h1 class="text-xl font-bold">Gestion des Missions - Réserve Gendarmerie</h1>
+                        <img id="nav-logo" src="/static/default-logo.png" alt="Logo" class="h-12 w-12 object-contain bg-white rounded-lg p-1 shadow-md">
+                        <div>
+                            <h1 class="text-xl font-bold">Missions Réserve Gendarmerie</h1>
+                            <p class="text-xs text-blue-200">Portail des missions disponibles</p>
+                        </div>
                     </div>
-                    <div class="flex space-x-4">
-                        <a href="/" class="px-4 py-2 bg-blue-700 rounded hover:bg-blue-600">
+                    <div class="flex space-x-3">
+                        <a href="/" class="px-4 py-2 bg-white text-blue-900 rounded-lg hover:bg-blue-50 font-medium transition-colors shadow-md">
                             <i class="fas fa-list mr-2"></i>Missions
                         </a>
-                        <a href="/admin" class="px-4 py-2 hover:bg-blue-800 rounded">
+                        <a href="/admin" class="px-4 py-2 bg-blue-800 hover:bg-blue-700 rounded-lg transition-colors">
                             <i class="fas fa-cog mr-2"></i>Administration
                         </a>
                     </div>
@@ -104,101 +107,19 @@ app.get('/', (c) => {
             </div>
         </nav>
 
+        <!-- Breadcrumb -->
+        <div class="bg-blue-800 text-white shadow-inner">
+            <div class="container mx-auto px-4 py-3">
+                <div id="breadcrumb" class="flex items-center text-sm">
+                    <i class="fas fa-home text-blue-300"></i>
+                    <span class="text-white font-medium ml-2">Sélection de la compagnie</span>
+                </div>
+            </div>
+        </div>
+
         <div class="container mx-auto px-4 py-8">
-            <!-- Sélecteur de brigade -->
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div class="flex items-center space-x-4">
-                    <i class="fas fa-building text-2xl text-blue-600"></i>
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Sélectionner une brigade</label>
-                        <select id="brigade-selector" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">Toutes les brigades</option>
-                        </select>
-                    </div>
-                    <button id="btn-info-brigade" onclick="showBrigadeInfo()" disabled
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
-                        <i class="fas fa-info-circle mr-2"></i>Informations
-                    </button>
-                </div>
-            </div>
-
-            <!-- Statistiques -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm">Total Missions</p>
-                            <p class="text-2xl font-bold text-gray-800" id="stat-missions">-</p>
-                        </div>
-                        <i class="fas fa-clipboard-list text-3xl text-blue-500"></i>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm">Assignés</p>
-                            <p class="text-2xl font-bold text-green-600" id="stat-valides">-</p>
-                        </div>
-                        <i class="fas fa-check-circle text-3xl text-green-500"></i>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm">En Attente</p>
-                            <p class="text-2xl font-bold text-yellow-600" id="stat-attente">-</p>
-                        </div>
-                        <i class="fas fa-clock text-3xl text-yellow-500"></i>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm">Places Libres</p>
-                            <p class="text-2xl font-bold text-gray-600" id="stat-libres">-</p>
-                        </div>
-                        <i class="fas fa-user-plus text-3xl text-gray-400"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filtres -->
-            <div class="bg-white rounded-lg shadow p-4 mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
-                        <select id="filter-priorite" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                            <option value="">Toutes</option>
-                            <option value="urgente">Urgente</option>
-                            <option value="haute">Haute</option>
-                            <option value="normale">Normale</option>
-                            <option value="basse">Basse</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                        <select id="filter-statut" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                            <option value="">Tous</option>
-                            <option value="complet">Complet (tous validés)</option>
-                            <option value="partiel">Partiellement assigné</option>
-                            <option value="libre">Places libres</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
-                        <input type="text" id="filter-search" placeholder="Rechercher..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Liste des missions -->
-            <div id="missions-list" class="space-y-4">
-                <div class="text-center py-8">
-                    <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
-                    <p class="text-gray-500 mt-2">Chargement des missions...</p>
-                </div>
-            </div>
+            <!-- Contenu principal -->
+            <div id="main-content"></div>
         </div>
 
         <!-- Modal informations brigade -->
