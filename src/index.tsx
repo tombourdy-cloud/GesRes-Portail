@@ -259,6 +259,19 @@ app.get('/admin', (c) => {
         </nav>
 
         <div class="container mx-auto px-4 py-8">
+            <!-- Barre de recherche globale -->
+            <div class="bg-white rounded-lg shadow-lg p-4 mb-6">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-search text-xl text-gray-400"></i>
+                    <input type="text" id="global-search" 
+                           placeholder="Rechercher une mission par numéro, titre, description, brigade, compétences..." 
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <button onclick="clearGlobalSearch()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
             <!-- Actions rapides -->
             <div class="flex space-x-4 mb-6 flex-wrap gap-2">
                 <button onclick="showAddMissionModal()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

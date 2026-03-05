@@ -131,6 +131,26 @@ function renderMissions(missions) {
           </div>
         </div>
         
+        <!-- Gendarmes assignés -->
+        ${mission.gendarmes_assignes && mission.gendarmes_assignes.length > 0 ? `
+          <div class="mb-4 border-t pt-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-users mr-2"></i>Gendarmes affectés :
+            </h4>
+            <div class="space-y-2">
+              ${mission.gendarmes_assignes.map(g => `
+                <div class="flex items-center space-x-2 text-sm">
+                  <span class="status-${g.statut} px-2 py-1 rounded text-xs font-medium">
+                    ${g.statut === 'valide' ? '✓' : '⏱'}
+                  </span>
+                  <span class="font-medium">${g.grade} ${g.nom} ${g.prenom}</span>
+                  <span class="text-gray-500 font-mono text-xs">(${g.matricule})</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+        
         <div class="flex space-x-2 flex-wrap gap-2">
           <span class="status-valide px-3 py-1 rounded text-sm font-medium">
             <i class="fas fa-check mr-1"></i>${mission.effectifs_assignes} Validé(s)

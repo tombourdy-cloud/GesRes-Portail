@@ -273,7 +273,30 @@ app.get('/api/missions', async (c) => {
   
   const missions = await DB.prepare(query).all()
   
-  return c.json(missions.results)
+  // Pour chaque mission, récupérer les gendarmes assignés
+  const missionsWithGendarmes = await Promise.all(
+    missions.results.map(async (mission: any) => {
+      const gendarmes = await DB.prepare(`
+        SELECT 
+          g.nom,
+          g.prenom,
+          g.grade,
+          g.matricule,
+          a.statut
+        FROM assignations a
+        JOIN gendarmes g ON a.gendarme_id = g.id
+        WHERE a.mission_id = ? AND a.statut IN ('valide', 'en_attente')
+        ORDER BY a.statut DESC
+      `).bind(mission.id).all()
+      
+      return {
+        ...mission,
+        gendarmes_assignes: gendarmes.results
+      }
+    })
+  )
+  
+  return c.json(missionsWithGendarmes)
 })
 
 // GET /api/missions/:id - Récupérer une mission avec détails complets

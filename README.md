@@ -1,200 +1,160 @@
-# Gestion des Missions - Réserve Gendarmerie
+# Gestion des Missions - Réservistes Gendarmerie
 
-Application web complète de gestion des missions pour les réservistes de la gendarmerie, avec interface d'administration sécurisée et système de gestion des brigades.
+## 📋 Vue d'ensemble du projet
 
-## 🎯 Objectif
+Application web complète de gestion des missions pour les réservistes de la gendarmerie nationale. Elle permet aux gendarmes de consulter les missions disponibles et aux administrateurs de gérer l'ensemble du système (missions, affectations, brigades, compagnies, gendarmes).
 
-Permettre la visualisation et la gestion des missions disponibles pour les réservistes de la gendarmerie, avec un système d'assignation et de validation des affectations organisé par brigades et compagnies.
+---
 
-## ✨ Fonctionnalités Complètes
+## 🌐 URLs d'accès
 
-### 🔐 Authentification
-- ✅ **Système de connexion sécurisé** pour accéder à l'interface admin
-- ✅ **Protection des routes admin** par JWT
-- ✅ **Gestion de session** avec cookies sécurisés
-- ✅ **Compte par défaut** : `admin` / `admin123`
+### Production (Sandbox)
+- **Page publique**: https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai
+- **Page de connexion admin**: https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai/login
+- **Interface d'administration**: https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai/admin
 
-### 📋 Interface Utilisateur (Page d'accueil)
-- ✅ **Sélecteur de brigade** pour filtrer les missions par brigade
-- ✅ **Bouton d'information** pour afficher les détails d'une brigade (clic sur lieu ou bouton info)
-- ✅ **Affichage des missions** avec numéro de mission, brigade et compagnie
-- ✅ **Statistiques en temps réel** (missions, assignations, places libres)
-- ✅ **Filtres avancés** (priorité, statut, recherche)
-- ✅ **Indicateurs visuels** de progression
+### Identifiants par défaut
+- **Utilisateur**: `admin`
+- **Mot de passe**: `admin123`
 
-### 🗺️ Gestion des Lieux (Hiérarchique)
-- ✅ **Compagnies de gendarmerie** :
-  - Nom, code, adresse, téléphone
-  - Commandant de compagnie
-  - Nombre de brigades rattachées
-- ✅ **Brigades rattachées aux compagnies** :
-  - Nom, code unique, adresse
-  - Chef de brigade, effectifs
-  - Téléphone, coordonnées GPS (optionnel)
-- ✅ **Interface de création** via l'onglet "Nouveau lieu"
-- ✅ **Organisation hiérarchique** : Compagnie → Brigades
-- ✅ **Modal d'information** affichant les détails brigade + compagnie parent
+---
 
-### 🛠️ Interface d'Administration
-1. **Onglet Missions** :
-   - Créer missions avec **numéro obligatoire**
-   - Champs obligatoires : **numéro, titre, brigade, date début**
-   - Sélection brigade via **liste déroulante**
-   - Tableau complet avec actions
-   
-2. **Onglet Compagnies & Brigades** :
-   - Vue hiérarchique : compagnie + ses brigades
-   - Créer compagnies et brigades
-   - Rattachement automatique brigade → compagnie
-   - Suppression avec gestion des dépendances
+## ✅ Fonctionnalités implémentées
 
-3. **Onglet Gendarmes** :
-   - Liste complète des réservistes
-   - Création de nouveaux gendarmes
-   - Suivi des missions actives
+### Interface publique (Gendarmes)
+1. **Sélecteur de brigade** en haut de page pour filtrer les missions par localisation
+2. **Affichage des missions** sous forme de cartes avec :
+   - Numéro de mission (badge bleu)
+   - Titre et description
+   - Brigade et compagnie (bouton cliquable)
+   - Dates de début et fin
+   - Badge de priorité (haute/moyenne/normale)
+   - Compétences requises
+   - Barre de progression des effectifs (validés/en attente/libres)
+   - **Noms des gendarmes assignés** (validés et en attente)
+3. **Filtres avancés** :
+   - Par priorité (haute/moyenne/normale)
+   - Par statut (complet/places disponibles)
+   - Recherche textuelle (titre, description, compétences)
+4. **Modal d'informations brigade** :
+   - Nom, code, effectifs
+   - Adresse complète
+   - Téléphone
+   - Chef de brigade
+   - Informations de la compagnie de rattachement
 
-4. **Gestion des Assignations** :
-   - Workflow : Libre → En attente → Validé
-   - Assigner des gendarmes
-   - Valider les assignations
-   - Libérer des places
+### Interface d'administration
 
-### 🎨 Personnalisation
-- ✅ **Écusson modifiable** : Clic sur le logo dans la navigation (admin uniquement)
-- ✅ **Upload via URL** d'image externe
-- ✅ **Persistance** en base de données (table config)
+#### 🔐 Authentification
+- Page de connexion sécurisée (`/login`)
+- Système JWT avec cookies HTTP-Only
+- Protection des routes admin
+- Déconnexion avec nettoyage des cookies
 
-## 🌐 URLs Actuelles
+#### 📋 Gestion des Missions
+- **Création** avec champs obligatoires :
+  - Numéro de mission (unique)
+  - Titre
+  - Brigade (sélection via dropdown)
+  - Date de début et fin
+- **Modification** des missions existantes via modal
+- **Suppression** de missions
+- **Barre de recherche globale** permettant de filtrer par :
+  - Numéro de mission
+  - Titre
+  - Brigade
+  - Date
+  - Priorité
+  - N'importe quel champ de la mission
+- **Affichage** en tableau avec :
+  - Numéro, titre, brigade, dates
+  - Effectifs (assignés/requis)
+  - Badge de priorité
+  - Actions (voir assignations, modifier, supprimer)
 
-### Développement (Sandbox)
-- **🏠 Page d'accueil** : https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai
-- **🔐 Connexion Admin** : https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai/login
-- **⚙️ Administration** : https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai/admin
+#### 👮 Gestion des Gendarmes
+- Liste complète avec matricule, nom, grade, spécialité, contact
+- Badge indiquant le nombre de missions actives
+- Création de nouveaux gendarmes
+- Affichage des missions actives par gendarme
 
-### 🔑 Identifiants
-- **Username** : `admin`
-- **Password** : `admin123`
+#### 📍 Gestion des Lieux
+- Organisation hiérarchique : **Compagnies → Brigades**
+- **Onglet "Nouveau lieu"** permettant de :
+  - Créer/modifier/supprimer des compagnies
+  - Créer/modifier/supprimer des brigades
+  - Rattacher les brigades aux compagnies
+- Affichage des relations hiérarchiques
 
-### API Endpoints
+#### 🎖️ Gestion des Affectations
+- Visualisation par mission des effectifs requis
+- Assignation de gendarmes (statut : libre → en attente → validé)
+- États possibles :
+  - **Libre** (gris) : place disponible
+  - **En attente** (jaune) : gendarme proposé, validation requise
+  - **Validé** (vert) : assignation confirmée
+- Actions : affecter, valider, rejeter, libérer
 
-**Authentification**
-- `POST /api/auth/login` - Connexion (username, password)
-- `POST /api/auth/logout` - Déconnexion
-- `GET /api/auth/me` - Vérifier session
+#### 🎨 Personnalisation
+- **Logo/écusson personnalisable** :
+  - Upload via URL d'image
+  - Affichage sur toutes les pages
+  - Stockage dans la base de données (table `settings`)
 
-**Compagnies**
-- `GET /api/compagnies` - Liste des compagnies
-- `GET /api/compagnies/:id` - Détails compagnie + brigades
-- `POST /api/compagnies` - Créer une compagnie
-- `PUT /api/compagnies/:id` - Modifier une compagnie
+---
 
-**Brigades**
-- `GET /api/brigades` - Liste des brigades
-- `GET /api/brigades/:id` - Détails brigade + compagnie parent
-- `POST /api/brigades` - Créer une brigade
-- `PUT /api/brigades/:id` - Modifier une brigade
-- `DELETE /api/brigades/:id` - Supprimer une brigade
+## 🗄️ Architecture des données
 
-**Missions**
-- `GET /api/missions?brigade_id=X` - Liste missions (filtrable par brigade)
-- `GET /api/missions/:id` - Détails mission complète
-- `POST /api/missions` - Créer mission (champs requis: numero_mission, titre, brigade_id, date_debut)
-- `PUT /api/missions/:id` - Modifier mission
-- `DELETE /api/missions/:id` - Supprimer mission
+### Modèle relationnel (Cloudflare D1 SQLite)
 
-**Gendarmes**
-- `GET /api/gendarmes` - Liste gendarmes
-- `GET /api/gendarmes/:id` - Détails gendarme
-- `POST /api/gendarmes` - Créer gendarme
-- `PUT /api/gendarmes/:id` - Modifier gendarme
+#### Table `users`
+- `id` (PK), `username`, `password_hash`, `nom`, `prenom`, `role`, `created_at`
 
-**Assignations**
-- `PUT /api/assignations/:id` - Modifier assignation (statut: libre|en_attente|valide)
+#### Table `compagnies`
+- `id` (PK), `nom`, `code`, `adresse`, `telephone`, `email`, `commandant`, `created_at`
 
-**Configuration**
-- `GET /api/config/:key` - Récupérer config (ex: logo_url)
-- `POST /api/config` - Mettre à jour config
+#### Table `brigades`
+- `id` (PK), `compagnie_id` (FK → compagnies), `nom`, `code`, `adresse`, `telephone`, `email`, `effectifs`, `chef_brigade`, `latitude`, `longitude`, `created_at`
 
-**Statistiques**
-- `GET /api/stats` - Stats globales
+#### Table `missions`
+- `id` (PK), `numero_mission` (UNIQUE), `titre`, `description`, `lieu`, `brigade_id` (FK → brigades), `date_debut`, `date_fin`, `effectifs_requis`, `competences_requises`, `priorite`, `created_at`
 
-## 🗄️ Architecture de Données
+#### Table `gendarmes`
+- `id` (PK), `matricule` (UNIQUE), `nom`, `prenom`, `grade`, `specialite`, `telephone`, `email`, `created_at`
 
-### Tables Database (Cloudflare D1)
+#### Table `assignations`
+- `id` (PK), `mission_id` (FK → missions), `gendarme_id` (FK → gendarmes, nullable), `statut` (libre/en_attente/valide), `created_at`
 
-**users**
-- Administrateurs avec authentification
-- username (unique), password_hash (SHA-256)
-- role (admin, super_admin)
-
-**compagnies**
-- Compagnies de gendarmerie
-- nom (unique), code (unique), adresse, commandant
-
-**brigades**
-- Brigades rattachées à une compagnie (relation hiérarchique)
-- compagnie_id (FK), nom, code (unique), adresse
-- chef_brigade, effectifs, coordonnées GPS
-
-**missions**
-- **numero_mission** (obligatoire, unique)
-- titre (obligatoire), description
-- **brigade_id** (obligatoire, FK vers brigades)
-- date_debut (obligatoire), date_fin
-- effectifs_requis, competences_requises, priorite
-
-**gendarmes**
-- matricule (unique), nom, prenom, grade
-- specialite, telephone, email, disponible
-
-**assignations**
-- Relation missions ↔ gendarmes
-- mission_id (FK), gendarme_id (FK nullable)
-- statut (libre|en_attente|valide)
-
-**config**
-- Configuration système (logo_url, etc.)
-- key (unique), value
+#### Table `settings`
+- `id` (PK), `key` (UNIQUE), `value`, `updated_at`
 
 ### Relations
-```
-Compagnie (1) ──→ (N) Brigades
-Brigade (1) ──→ (N) Missions
-Mission (1) ──→ (N) Assignations ──→ (0..1) Gendarme
-```
+- Compagnie **1 → N** Brigades
+- Brigade **1 → N** Missions
+- Mission **1 → N** Assignations
+- Gendarme **1 → N** Assignations (validées/en attente)
 
-## 🚀 Guide d'Utilisation
+---
 
-### Pour les Gendarmes (Consultation)
-1. **Accéder à la page d'accueil**
-2. **Sélectionner une brigade** dans la liste déroulante
-3. **Cliquer sur "Informations"** pour voir les détails de la brigade
-4. **Consulter les missions** de la brigade sélectionnée
-5. **Cliquer sur le nom d'une brigade** dans une mission pour voir ses infos
-6. **Utiliser les filtres** pour affiner la recherche
+## 🛠️ Stack technique
 
-### Pour les Administrateurs
-1. **Se connecter** via `/login` (admin/admin123)
-2. **Créer des lieux** (onglet "Compagnies & Brigades") :
-   - D'abord créer une **compagnie**
-   - Puis ajouter des **brigades** rattachées à la compagnie
-3. **Créer une mission** :
-   - Remplir **numéro de mission** (obligatoire)
-   - Renseigner **titre** (obligatoire)
-   - Sélectionner **brigade** dans la liste (obligatoire)
-   - Définir **date début** (obligatoire)
-   - Compléter autres informations
-4. **Gérer les assignations** :
-   - Cliquer sur l'icône "Gérer" d'une mission
-   - **Assigner** un gendarme à une place libre
-   - **Valider** les assignations en attente
-   - **Libérer** des places si nécessaire
-5. **Personnaliser l'écusson** :
-   - Cliquer sur le logo dans la navigation
-   - Entrer l'URL d'une image externe
-   - Sauvegarder
+- **Backend**: Hono.js (framework edge-first)
+- **Base de données**: Cloudflare D1 (SQLite distribué)
+- **Runtime**: Cloudflare Workers/Pages
+- **Frontend**: HTML5 + JavaScript Vanilla + TailwindCSS (CDN)
+- **Icons**: Font Awesome 6.4.0 (CDN)
+- **Build**: Vite + TypeScript
+- **Process Management**: PM2
+- **Authentification**: JWT avec cookies HTTP-Only
 
-## 💻 Déploiement Local
+---
+
+## 📦 Installation et développement local
+
+### Prérequis
+- Node.js 18+
+- npm 9+
+- PM2 (pré-installé dans le sandbox)
 
 ### Installation
 ```bash
@@ -202,209 +162,355 @@ cd /home/user/webapp
 npm install
 ```
 
-### Développement
+### Configuration de la base de données
 ```bash
 # Appliquer les migrations
 npm run db:migrate:local
 
-# Insérer les données de test
+# Charger les données de test
 npm run db:seed
-npx wrangler d1 execute webapp-production --local --file=./seed_brigades.sql
-npx wrangler d1 execute webapp-production --local --file=./fix_admin_user.sql
 
-# Build
+# Réinitialiser la base (efface tout et recharge)
+npm run db:reset
+```
+
+### Lancement en développement
+```bash
+# Build du projet
 npm run build
 
-# Démarrer
+# Démarrer avec PM2
 pm2 start ecosystem.config.cjs
 
-# Tester
-curl http://localhost:3000/api/stats
+# Vérifier les logs
+pm2 logs webapp --nostream
+
+# Arrêter le service
+pm2 delete webapp
 ```
 
-### Commandes DB
-```bash
-npm run db:reset              # Reset complet
-npm run db:console:local      # Console SQL
-```
+### Accès local
+- Interface publique : http://localhost:3000
+- Interface admin : http://localhost:3000/admin
+- API : http://localhost:3000/api/*
 
-## 🌍 Déploiement Production
+---
+
+## 🚀 Déploiement sur Cloudflare Pages
 
 ### Prérequis
-1. Compte Cloudflare
-2. API Token configuré
-3. Créer base D1 production
+1. Compte Cloudflare avec API Token configuré
+2. Appeler `setup_cloudflare_api_key` pour configurer l'authentification
 
-### Étapes
+### Créer le projet Cloudflare Pages
 ```bash
-# 1. Créer base D1
+# Créer la base de données de production
 npx wrangler d1 create webapp-production
 
-# 2. Copier database_id dans wrangler.jsonc
+# Copier le database_id dans wrangler.jsonc
 
-# 3. Migrations production
+# Créer le projet Pages
+npx wrangler pages project create webapp --production-branch main
+
+# Appliquer les migrations en production
 npm run db:migrate:prod
-npx wrangler d1 execute webapp-production --file=./seed.sql
-npx wrangler d1 execute webapp-production --file=./seed_brigades.sql  
-npx wrangler d1 execute webapp-production --file=./fix_admin_user.sql
-
-# 4. Déployer
-npm run deploy:prod
 ```
 
-## 📊 Données de Test
+### Déployer
+```bash
+# Build et déploiement
+npm run deploy
 
-- **4 Compagnies** (Paris, Lyon, Marseille, Toulouse)
-- **12 Brigades** (3 par compagnie)
-- **6 Gendarmes** avec différents grades
-- **6 Missions** variées avec numéros
-- **1 Utilisateur admin** (admin/admin123)
+# Ou manuellement
+npm run build
+npx wrangler pages deploy dist --project-name webapp
+```
 
-## 🛠️ Stack Technique
+### Configuration des secrets
+```bash
+# Ajouter des variables d'environnement (si nécessaire)
+npx wrangler pages secret put JWT_SECRET --project-name webapp
+```
 
-- **Backend** : Hono + TypeScript
-- **Base de données** : Cloudflare D1 (SQLite)
-- **Authentification** : JWT + SHA-256
-- **Frontend** : Vanilla JavaScript
-- **Styling** : Tailwind CSS
-- **Icons** : Font Awesome
-- **Dates** : Day.js
-- **HTTP** : Axios
-- **Déploiement** : Cloudflare Pages
+---
 
-## 📁 Structure
+## 📊 API Endpoints
+
+### Public
+- `GET /api/missions` - Liste toutes les missions avec gendarmes assignés
+- `GET /api/missions/:id` - Détails d'une mission
+- `GET /api/brigades` - Liste toutes les brigades avec leurs compagnies
+- `GET /api/brigades/:id` - Détails d'une brigade
+- `GET /api/compagnies` - Liste toutes les compagnies
+- `GET /api/settings/:key` - Récupérer un paramètre (ex: logo)
+
+### Administration (authentification requise)
+- `POST /api/auth/login` - Connexion admin
+- `POST /api/auth/logout` - Déconnexion
+- `GET /api/auth/me` - Vérifier l'authentification
+- `POST /api/missions` - Créer une mission
+- `PUT /api/missions/:id` - Modifier une mission
+- `DELETE /api/missions/:id` - Supprimer une mission
+- `POST /api/compagnies` - Créer une compagnie
+- `PUT /api/compagnies/:id` - Modifier une compagnie
+- `DELETE /api/compagnies/:id` - Supprimer une compagnie
+- `POST /api/brigades` - Créer une brigade
+- `PUT /api/brigades/:id` - Modifier une brigade
+- `DELETE /api/brigades/:id` - Supprimer une brigade
+- `POST /api/gendarmes` - Créer un gendarme
+- `GET /api/gendarmes` - Liste des gendarmes
+- `GET /api/assignations/mission/:missionId` - Assignations par mission
+- `PUT /api/assignations/:id` - Modifier une assignation
+- `PUT /api/settings/:key` - Modifier un paramètre
+
+---
+
+## 📈 Données de test incluses
+
+- **4 compagnies** : Paris (CGP), Lyon (CGL), Marseille (CGM), Toulouse (CGT)
+- **12 brigades** : 3 par compagnie (Centre, Nord, Sud/Est/Ouest)
+- **6 missions** : avec numéros M2026-001 à M2026-006
+- **6 gendarmes** : grades variés (Adjudant-chef, Maréchal des logis, Brigadier-chef, Gendarme)
+- **14 assignations** : mix de statuts (libre, en attente, validé)
+
+---
+
+## 🎯 Fonctionnalités à venir (suggestions)
+
+1. **Authentification avancée** :
+   - Gestion des rôles (super_admin, admin, manager)
+   - Réinitialisation de mot de passe
+   - Multi-factor authentication (MFA)
+
+2. **Notifications** :
+   - Email de notification aux gendarmes (nouvelle mission, validation)
+   - Rappels automatiques avant début de mission
+
+3. **Export et rapports** :
+   - Export PDF des missions
+   - Export Excel des statistiques
+   - Rapport mensuel d'activité
+
+4. **Visualisations avancées** :
+   - Calendrier des missions
+   - Carte interactive des brigades
+   - Dashboard avec graphiques (Chart.js)
+
+5. **Améliorations UX** :
+   - Historique des modifications
+   - Upload d'image pour logo (fichier local)
+   - Thème sombre
+   - Version mobile optimisée
+
+6. **Sécurité** :
+   - Rate limiting
+   - Validation plus stricte des entrées
+   - Audit logs des actions admin
+
+---
+
+## 🔧 Scripts npm disponibles
+
+```bash
+npm run dev            # Vite dev server (local machine uniquement)
+npm run dev:sandbox    # Wrangler dev server pour sandbox
+npm run dev:d1         # Wrangler avec base D1 locale
+npm run build          # Build pour production
+npm run preview        # Preview du build local
+npm run deploy         # Build + déploiement Cloudflare Pages
+npm run db:migrate:local   # Appliquer migrations localement
+npm run db:migrate:prod    # Appliquer migrations en production
+npm run db:seed        # Charger données de test
+npm run db:reset       # Réinitialiser base locale
+npm run clean-port     # Libérer le port 3000
+npm run test           # Test curl de l'API
+```
+
+---
+
+## 📝 Guide d'utilisation
+
+### Pour les gendarmes (interface publique)
+1. Accéder à la page d'accueil
+2. Sélectionner une brigade dans le menu déroulant (optionnel)
+3. Utiliser les filtres (priorité, statut, recherche)
+4. Consulter les missions disponibles
+5. Cliquer sur le bouton brigade pour voir les informations du lieu
+6. Noter les gendarmes déjà assignés sur chaque mission
+
+### Pour les administrateurs
+1. Se connecter via `/login` (admin/admin123)
+2. **Onglet Missions** :
+   - Créer une nouvelle mission (champs obligatoires : numéro, titre, brigade, dates)
+   - Rechercher une mission via la barre de recherche globale
+   - Modifier une mission existante (bouton éditer)
+   - Voir/gérer les assignations (bouton "Voir")
+   - Supprimer une mission
+3. **Onglet Nouveau lieu** :
+   - Créer des compagnies (nom, code, adresse, commandant)
+   - Créer des brigades rattachées aux compagnies
+   - Modifier ou supprimer compagnies/brigades
+4. **Onglet Nouveau gendarme** :
+   - Ajouter un gendarme (matricule, nom, prénom, grade, spécialité, contact)
+   - Voir la liste avec le nombre de missions actives
+5. **Paramètres** :
+   - Changer l'écusson (logo) via URL d'image
+
+---
+
+## 🏗️ Structure du projet
 
 ```
 webapp/
 ├── src/
-│   ├── api.tsx             # Routes API (auth, CRUD)
-│   └── index.tsx           # Pages HTML
-├── public/static/
-│   ├── app.js              # JS page accueil
-│   ├── admin.js            # JS page admin
-│   ├── login.js            # JS page login
-│   ├── style.css           # Styles
-│   └── default-logo.png    # Logo par défaut
+│   ├── index.tsx          # Application Hono principale
+│   └── api.tsx            # Routes API (missions, gendarmes, brigades)
+├── public/
+│   └── static/
+│       ├── app.js         # Frontend public (missions)
+│       ├── admin.js       # Frontend admin (CRUD complet + recherche)
+│       ├── login.js       # Page de connexion
+│       ├── default-logo.png
+│       └── styles.css
 ├── migrations/
-│   ├── 0001_initial_schema.sql
-│   └── 0002_add_auth_brigades.sql
-├── seed.sql                # Données initiales
-├── seed_brigades.sql       # Compagnies et brigades
-├── fix_admin_user.sql      # Utilisateur admin
-├── ecosystem.config.cjs    # PM2
-├── wrangler.jsonc          # Cloudflare
-└── package.json
+│   ├── 0001_initial_schema.sql      # Schéma missions/gendarmes
+│   └── 0002_add_auth_brigades.sql   # Auth + brigades/compagnies
+├── seed.sql               # Données de test missions/gendarmes
+├── seed_brigades.sql      # Données de test compagnies/brigades
+├── fix_admin_user.sql     # Script de création compte admin
+├── ecosystem.config.cjs   # Configuration PM2
+├── wrangler.jsonc         # Configuration Cloudflare
+├── vite.config.ts         # Configuration Vite
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
 
-## 🔄 Nouvelles Fonctionnalités
+---
 
-### ✅ Système d'Authentification
-- Page de connexion dédiée
-- Protection des routes admin
-- Session persistante avec cookies
-- Déconnexion sécurisée
+## 🔄 Workflow de développement
 
-### ✅ Gestion Hiérarchique des Lieux
-- **Compagnies** : Niveau supérieur
-- **Brigades** : Rattachées à une compagnie
-- Création et suppression
-- Modal d'information détaillée
+### Modifications du code
+1. Modifier les fichiers dans `src/` ou `public/static/`
+2. Rebuild : `npm run build`
+3. Redémarrer : `pm2 restart webapp`
+4. Tester : `curl http://localhost:3000/api/missions`
 
-### ✅ Missions Améliorées
-- **Numéro de mission** unique obligatoire
-- **Sélection brigade** via liste déroulante
-- **Validation des champs** obligatoires
-- **Affichage brigade + compagnie** dans les cartes
+### Modifications de la base de données
+1. Créer un nouveau fichier de migration dans `migrations/`
+2. Appliquer : `npm run db:migrate:local`
+3. (Optionnel) Charger des données : créer un fichier SQL et exécuter avec `npx wrangler d1 execute webapp-production --local --file=./votre-fichier.sql`
+4. En production : `npm run db:migrate:prod`
 
-### ✅ Interface Utilisateur Améliorée
-- **Filtre par brigade** en haut de page
-- **Clic sur lieu** pour afficher infos brigade
-- **Design responsive** et moderne
-- **Écusson personnalisable** par URL
-
-## 🎯 Workflow Complet
-
-### Création d'une Mission
-1. Admin se connecte → `/login`
-2. Clique "Nouveau Lieu" → Crée compagnie et brigades
-3. Clique "Nouvelle Mission" → Remplit formulaire :
-   - ✅ Numéro mission (requis)
-   - ✅ Titre (requis)
-   - ✅ Brigade (requis, liste déroulante)
-   - ✅ Date début (requis)
-   - Autres champs optionnels
-4. Mission créée avec places libres
-
-### Assignation et Validation
-```
-Place Libre → [Assigner gendarme] → En Attente → [Valider] → Validé
-                                    ↓                        ↓
-                                    [Libérer] ←─────────────┘
-```
-
-### Consultation par Gendarme
-1. Gendarme visite page d'accueil
-2. **Sélectionne sa brigade** dans le menu déroulant
-3. Voit uniquement les missions de sa brigade
-4. **Clique sur le lieu** pour voir infos brigade + compagnie
-
-## 🔐 Sécurité
-
-- **Authentification SHA-256** pour les mots de passe
-- **Sessions JWT** avec expiration 24h
-- **Protection routes admin** : redirection vers login si non authentifié
-- **Cookies HttpOnly** pour sécuriser les tokens
-
-⚠️ **Pour production** : Implémenter bcrypt et JWT signé avec secret sécurisé
-
-## 📝 Améliorations Recommandées
-
-1. **Authentification renforcée** :
-   - Bcrypt pour hash passwords
-   - JWT signé avec secret environnement
-   - Gestion des rôles avancée
-
-2. **Fonctionnalités supplémentaires** :
-   - Export PDF/Excel des plannings
-   - Notifications email
-   - Vue calendrier
-   - Historique des modifications
-   - Upload de fichiers pour l'écusson
-
-3. **UX** :
-   - Carte interactive des brigades
-   - Recherche autocomplete
-   - Dashboard graphiques
-
-## 💾 Base de Données
-
-**Mode Local** : `.wrangler/state/v3/d1/`  
-**Mode Production** : Cloudflare D1 distribué globalement
-
-### Commandes Utiles
+### Commits Git
 ```bash
-# Console SQL locale
-npm run db:console:local
+git add .
+git commit -m "Votre message"
+git push origin main
+```
 
-# Voir les brigades
+---
+
+## 🎨 Personnalisation
+
+### Changer les couleurs
+Modifier les classes Tailwind dans `src/index.tsx` et les fichiers JS du dossier `public/static/`.
+
+### Ajouter des champs
+1. Modifier la migration dans `migrations/`
+2. Appliquer avec `npm run db:migrate:local`
+3. Mettre à jour les API dans `src/api.tsx`
+4. Mettre à jour le frontend dans `public/static/admin.js`
+
+### Ajouter un nouvel utilisateur admin
+```bash
+# Créer un hash SHA-256 du mot de passe
+echo -n "votre_mot_de_passe" | sha256sum
+
+# Insérer dans la base
+npx wrangler d1 execute webapp-production --local --command="INSERT INTO users (username, password_hash, nom, prenom, role) VALUES ('nouveau_admin', 'hash_ici', 'Nom', 'Prénom', 'admin')"
+```
+
+---
+
+## ⚙️ Configuration Cloudflare
+
+### wrangler.jsonc
+```jsonc
+{
+  "name": "webapp",
+  "compatibility_date": "2026-03-05",
+  "pages_build_output_dir": "./dist",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "webapp-production",
+      "database_id": "YOUR_DATABASE_ID"
+    }
+  ]
+}
+```
+
+---
+
+## 🐛 Dépannage
+
+### Le port 3000 est déjà utilisé
+```bash
+npm run clean-port
+# ou
+fuser -k 3000/tcp
+```
+
+### L'authentification ne fonctionne pas
+- Vérifier que le cookie `auth_token` est bien envoyé
+- Vérifier le hash du mot de passe dans la table `users`
+- Mot de passe par défaut : `admin123` (hash SHA-256)
+
+### Les brigades n'apparaissent pas
+```bash
+# Vérifier les données
 npx wrangler d1 execute webapp-production --local --command="SELECT * FROM brigades"
 
-# Voir les compagnies
-npx wrangler d1 execute webapp-production --local --command="SELECT * FROM compagnies"
+# Recharger les données
+npm run db:reset
 ```
 
-## 📞 Support
+### Erreur "SQLITE_ERROR"
+- Vérifier la syntaxe SQL dans les fichiers de migration
+- S'assurer que toutes les colonnes ont des valeurs
 
-**Logs** : `pm2 logs webapp --nostream`  
-**Status** : `pm2 list`  
-**Restart** : `pm2 restart webapp`
+---
 
-## 🎉 Statut
+## 📅 Historique des versions
 
-- ✅ **Authentification** : Opérationnelle
-- ✅ **Gestion lieux** : Compagnies + Brigades
-- ✅ **Missions** : Numéro obligatoire + Brigade
-- ✅ **Assignations** : Workflow complet
-- ✅ **Personnalisation** : Logo modifiable
-- ✅ **Interface utilisateur** : Filtre par brigade
-- ✅ **Prêt pour production** : Oui (après config Cloudflare)
+### Version 2.0 (2026-03-05)
+- ✅ Système d'authentification JWT
+- ✅ Champ numéro de mission obligatoire
+- ✅ Gestion hiérarchique compagnies/brigades
+- ✅ Sélecteur de brigade sur page publique
+- ✅ Modal d'informations brigade
+- ✅ Barre de recherche globale admin
+- ✅ Modification des missions existantes
+- ✅ Affichage des noms de gendarmes assignés
+- ✅ Logo/écusson personnalisable
+
+### Version 1.0 (2026-03-05)
+- ✅ CRUD missions, gendarmes, assignations
+- ✅ Interface publique avec filtres
+- ✅ Interface admin avec onglets
+- ✅ Base de données D1 avec migrations
+- ✅ Déploiement PM2
+
+---
+
+## 📞 Support et contributions
+
+Pour toute question ou amélioration, veuillez créer une issue sur le dépôt GitHub ou contacter l'équipe de développement.
+
+---
+
+## 📄 Licence
+
+Ce projet est développé pour la Gendarmerie Nationale Française. Tous droits réservés.
