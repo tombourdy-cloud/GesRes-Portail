@@ -259,54 +259,70 @@ app.get('/admin', (c) => {
         </nav>
 
         <div class="container mx-auto px-4 py-8">
-            <!-- Barre de recherche globale -->
-            <div class="bg-white rounded-lg shadow-lg p-4 mb-6">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-search text-xl text-gray-400"></i>
-                    <input type="text" id="global-search" 
-                           placeholder="Rechercher une mission par numéro, titre, description, brigade, compétences..." 
-                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <button onclick="clearGlobalSearch()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Actions rapides -->
-            <div class="flex space-x-4 mb-6 flex-wrap gap-2">
-                <button onclick="showAddMissionModal()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    <i class="fas fa-plus mr-2"></i>Nouvelle Mission
-                </button>
-                <button onclick="showAddLieuModal()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    <i class="fas fa-map-marker-alt mr-2"></i>Nouveau Lieu
-                </button>
-                <button onclick="showAddGendarmeModal()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    <i class="fas fa-user-plus mr-2"></i>Nouveau Gendarme
-                </button>
-            </div>
-
             <!-- Onglets -->
             <div class="bg-white rounded-lg shadow mb-6">
                 <div class="flex border-b">
                     <button onclick="switchTab('missions')" id="tab-missions" 
-                            class="px-6 py-3 font-medium text-blue-600 border-b-2 border-blue-600">
+                            class="tab-btn px-6 py-3 font-medium text-blue-600 border-b-2 border-blue-600">
                         <i class="fas fa-clipboard-list mr-2"></i>Missions
                     </button>
                     <button onclick="switchTab('lieux')" id="tab-lieux" 
-                            class="px-6 py-3 font-medium text-gray-500 hover:text-gray-700">
+                            class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
                         <i class="fas fa-map-marked-alt mr-2"></i>Compagnies & Brigades
                     </button>
                     <button onclick="switchTab('gendarmes')" id="tab-gendarmes" 
-                            class="px-6 py-3 font-medium text-gray-500 hover:text-gray-700">
+                            class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
                         <i class="fas fa-users mr-2"></i>Gendarmes
+                    </button>
+                    <button onclick="switchTab('parametres')" id="tab-parametres" 
+                            class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
+                        <i class="fas fa-cog mr-2"></i>Paramètres
                     </button>
                 </div>
             </div>
 
-            <!-- Contenu des onglets -->
+            <!-- Contenu Missions -->
             <div id="content-missions" class="space-y-4"></div>
+            
+            <!-- Contenu Lieux -->
             <div id="content-lieux" class="hidden space-y-4"></div>
-            <div id="content-gendarmes" class="hidden space-y-4"></div>
+            
+            <!-- Contenu Gendarmes -->
+            <div id="content-gendarmes" class="hidden space-y-4">
+                <div class="bg-white rounded-lg shadow-lg p-4 mb-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3 flex-1">
+                            <i class="fas fa-search text-xl text-gray-400"></i>
+                            <input type="text" id="search-gendarme" 
+                                   placeholder="Rechercher un gendarme par nom, matricule, grade, spécialité..." 
+                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button onclick="showNewGendarmeModal()" class="ml-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <i class="fas fa-plus mr-2"></i>Nouveau gendarme
+                        </button>
+                    </div>
+                </div>
+                <div id="gendarmes-table-container"></div>
+            </div>
+            
+            <!-- Contenu Paramètres -->
+            <div id="content-parametres" class="hidden space-y-4">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">
+                        <i class="fas fa-image mr-2"></i>Logo / Écusson
+                    </h3>
+                    <form id="form-logo">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">URL de l'image</label>
+                            <input type="url" id="logo-url" placeholder="https://example.com/logo.png"
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-save mr-2"></i>Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- Tous les modals (mission, lieu, gendarme, assignations, logo, etc.) -->
