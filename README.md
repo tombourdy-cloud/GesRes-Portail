@@ -51,7 +51,14 @@ Application web complète de gestion des missions pour les réservistes de la ge
 - Protection des routes admin
 - Déconnexion avec nettoyage des cookies
 
-#### 📋 Gestion des Missions
+#### 📋 Gestion des Missions (Navigation hiérarchique)
+- **Affichage organisé** en 3 niveaux :
+  1. **Vue Compagnies** : Cartes cliquables affichant le nombre de missions par compagnie
+  2. **Vue Brigades** : Après sélection de la compagnie, cartes des brigades avec compteur de missions
+  3. **Vue Missions** : Après sélection de la brigade, tableau détaillé des missions
+- **Navigation** :
+  - Fil d'ariane (breadcrumb) pour voir le chemin : Accueil → Compagnie → Brigade
+  - Bouton "Retour aux compagnies" pour revenir à la vue principale
 - **Création** avec champs obligatoires :
   - Numéro de mission (unique)
   - Titre
@@ -59,24 +66,24 @@ Application web complète de gestion des missions pour les réservistes de la ge
   - Date de début et fin
 - **Modification** des missions existantes via modal
 - **Suppression** de missions
-- **Barre de recherche globale** permettant de filtrer par :
-  - Numéro de mission
-  - Titre
-  - Brigade
-  - Date
-  - Priorité
-  - N'importe quel champ de la mission
-- **Affichage** en tableau avec :
-  - Numéro, titre, brigade, dates
-  - Effectifs (assignés/requis)
-  - Badge de priorité
-  - Actions (voir assignations, modifier, supprimer)
+- **Affichage missions** :
+  - Numéro, titre, dates
+  - Effectifs (assignés/requis) avec code couleur
+  - Badge de priorité (haute/moyenne/normale)
+  - Actions : voir assignations, éditer, supprimer
 
 #### 👮 Gestion des Gendarmes
-- Liste complète avec matricule, nom, grade, spécialité, contact
-- Badge indiquant le nombre de missions actives
-- Création de nouveaux gendarmes
-- Affichage des missions actives par gendarme
+- **Barre de recherche** en temps réel permettant de filtrer par :
+  - Matricule
+  - Nom ou prénom
+  - Grade
+  - Spécialité
+  - Téléphone ou email
+- **Liste complète** avec matricule, nom, grade, spécialité, contact
+- **Badge** indiquant le nombre de missions actives
+- **Création** de nouveaux gendarmes
+- **Modification** de gendarmes existants via bouton "Modifier"
+- **Affichage** des missions actives par gendarme
 
 #### 📍 Gestion des Lieux
 - Organisation hiérarchique : **Compagnies → Brigades**
@@ -484,6 +491,14 @@ npm run db:reset
 ---
 
 ## 📅 Historique des versions
+
+### Version 3.0 (2026-03-05)
+- ✅ **Navigation hiérarchique** dans l'admin : Compagnies → Brigades → Missions
+- ✅ **Cartes cliquables** pour sélectionner compagnies et brigades
+- ✅ **Compteurs visuels** de missions par compagnie/brigade
+- ✅ **Fil d'ariane** (breadcrumb) pour la navigation
+- ✅ **Barre de recherche gendarmes** avec filtrage en temps réel
+- ✅ **Modification de gendarmes** via bouton dans l'interface
 
 ### Version 2.0 (2026-03-05)
 - ✅ Système d'authentification JWT
