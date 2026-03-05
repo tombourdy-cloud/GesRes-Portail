@@ -1,15 +1,16 @@
-/* Police Marianne - Police officielle de la République Française */
-@import url('https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/core/core.css');
+/* Police Inter - Alternative moderne et professionnelle à Marianne */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Application de la police Marianne sur tout le site */
+/* Application de la police Inter sur tout le site */
 * {
-  font-family: "Marianne", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* Amélioration de l'affichage des textes */
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
 /* Styles pour les badges de priorité */

@@ -347,10 +347,16 @@ npx wrangler pages secret put JWT_SECRET --project-name webapp
 - API Missions : ~43ms (incluant les jointures et agrégations)
 
 ### UI responsive
-- **Police Marianne** : Police officielle de l'État français pour cohérence visuelle
+- **Police Inter** : Police moderne et professionnelle open-source (alternative légale à Marianne)
 - **Effets hover** : Animation fluide sur les cartes cliquables
 - **Codes couleur** : Bleu pour compagnies, vert pour brigades, badges de statut
 - **Grid responsive** : Adaptation automatique mobile/tablette/desktop
+
+### Design
+- **Police** : Inter (Google Fonts) - poids 300 à 800
+- **Palette** : Bleu (#2563eb) compagnies, Vert (#16a34a) brigades
+- **Antialiasing** : Rendu optimisé pour écrans haute résolution
+- **Feature settings OpenType** : Ligatures et variantes contextuelles activées
 
 ---
 
@@ -533,7 +539,7 @@ npm run db:reset
 ### Version 3.1 (2026-03-05)
 - ✅ **Liste déroulante des grades** : 15 grades officiels de la gendarmerie (Gendarme à Général)
 - ✅ **Optimisation chargement** : Préchargement parallèle de toutes les données (missions, brigades, compagnies, gendarmes)
-- ✅ **Police Marianne** : Police officielle de la République Française appliquée à tout le site
+- ✅ **Police Inter** : Police moderne et professionnelle (alternative légale à Marianne pour usage non-gouvernemental)
 - ✅ **Amélioration UI** : Cartes compagnies/brigades avec effets hover améliorés et codes couleur
 
 ### Version 3.0 (2026-03-05)
