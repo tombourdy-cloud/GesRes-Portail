@@ -1,0 +1,252 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   👥 GUIDE RAPIDE - Création d'utilisateurs admin GesRes        ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📅 Date : 06/03/2026
+
+══════════════════════════════════════════════════════════════════
+
+🎯 OBJECTIF
+══════════════════════════════════════════════════════════════════
+
+Créer de nouveaux comptes administrateurs pour donner accès à
+l'interface d'administration de GesRes à plusieurs personnes.
+
+══════════════════════════════════════════════════════════════════
+
+⚡ MÉTHODE RAPIDE (Script automatique)
+══════════════════════════════════════════════════════════════════
+
+cd /home/user/webapp
+./create_user.sh
+
+Le script vous demandera :
+├─ Nom d'utilisateur (ex: jean.dupont)
+├─ Prénom
+├─ Nom
+├─ Mot de passe
+└─ Confirmation du mot de passe
+
+Puis créera automatiquement l'utilisateur dans la base de données.
+
+══════════════════════════════════════════════════════════════════
+
+🔧 MÉTHODE MANUELLE
+══════════════════════════════════════════════════════════════════
+
+Étape 1 : Générer le hash du mot de passe
+──────────────────────────────────────────
+echo -n "VotreMotDePasse" | sha256sum
+
+Exemple :
+echo -n "Marie2026!" | sha256sum
+# Résultat : abc123def456...
+
+Étape 2 : Créer l'utilisateur
+──────────────────────────────────────────
+cd /home/user/webapp
+
+npx wrangler d1 execute webapp-production --remote \
+  --command="INSERT INTO users (username, password_hash, nom, prenom, role) VALUES ('marie.martin', 'HASH_ICI', 'Martin', 'Marie', 'admin')"
+
+Étape 3 : Vérifier
+──────────────────────────────────────────
+npx wrangler d1 execute webapp-production --remote \
+  --command="SELECT username, nom, prenom FROM users WHERE username='marie.martin'"
+
+══════════════════════════════════════════════════════════════════
+
+✅ UTILISATEURS ACTUELS
+══════════════════════════════════════════════════════════════════
+
+ID │ Username   │ Nom      │ Prénom  │ Rôle  │ Date création
+───┼────────────┼──────────┼─────────┼───────┼────────────────────
+ 2 │ admin      │ Admin    │ Système │ admin │ 2026-03-06 10:22:11
+ 3 │ demo.user  │ User     │ Demo    │ admin │ 2026-03-06 10:26:44
+
+══════════════════════════════════════════════════════════════════
+
+🔐 IDENTIFIANTS DES COMPTES EXISTANTS
+══════════════════════════════════════════════════════════════════
+
+Compte principal :
+──────────────────
+Username : admin
+Password : admin123
+URL      : https://gesres-missions.pages.dev/login
+
+Compte de démonstration :
+──────────────────────────
+Username : demo.user
+Password : Test2026!
+URL      : https://gesres-missions.pages.dev/login
+
+══════════════════════════════════════════════════════════════════
+
+📝 EXEMPLES DE CRÉATION
+══════════════════════════════════════════════════════════════════
+
+Exemple 1 : Créer "Jean Dupont"
+────────────────────────────────
+# 1. Hash
+echo -n "Jean2026!" | sha256sum
+
+# 2. Créer
+npx wrangler d1 execute webapp-production --remote \
+  --command="INSERT INTO users (username, password_hash, nom, prenom, role) VALUES ('jean.dupont', 'HASH', 'Dupont', 'Jean', 'admin')"
+
+Exemple 2 : Créer "Sophie Bernard"
+───────────────────────────────────
+# 1. Hash
+echo -n "Sophie@2026" | sha256sum
+
+# 2. Créer
+npx wrangler d1 execute webapp-production --remote \
+  --command="INSERT INTO users (username, password_hash, nom, prenom, role) VALUES ('sophie.bernard', 'HASH', 'Bernard', 'Sophie', 'admin')"
+
+══════════════════════════════════════════════════════════════════
+
+📊 GESTION DES UTILISATEURS
+══════════════════════════════════════════════════════════════════
+
+Lister tous les utilisateurs
+─────────────────────────────
+npx wrangler d1 execute webapp-production --remote \
+  --command="SELECT id, username, nom, prenom, role FROM users"
+
+Compter les utilisateurs
+─────────────────────────
+npx wrangler d1 execute webapp-production --remote \
+  --command="SELECT COUNT(*) as total FROM users"
+
+Supprimer un utilisateur
+─────────────────────────
+npx wrangler d1 execute webapp-production --remote \
+  --command="DELETE FROM users WHERE username='nom.utilisateur'"
+
+Changer le mot de passe
+────────────────────────
+# 1. Générer le nouveau hash
+echo -n "NouveauMDP" | sha256sum
+
+# 2. Mettre à jour
+npx wrangler d1 execute webapp-production --remote \
+  --command="UPDATE users SET password_hash='HASH' WHERE username='nom.utilisateur'"
+
+══════════════════════════════════════════════════════════════════
+
+🔒 BONNES PRATIQUES
+══════════════════════════════════════════════════════════════════
+
+Conventions de nommage
+──────────────────────
+Format : prenom.nom
+
+✅ Bons exemples :
+   • jean.dupont
+   • marie.martin
+   • sophie.bernard
+
+❌ Mauvais exemples :
+   • jeandupont (sans séparateur)
+   • j.dupont (trop court)
+   • JEAN.DUPONT (majuscules)
+
+Mots de passe forts
+───────────────────
+Doit contenir :
+✅ Au moins 12 caractères
+✅ Majuscules ET minuscules
+✅ Chiffres
+✅ Caractères spéciaux (!, @, #, $)
+
+✅ Bons exemples :
+   • GesRes2026!Secure
+   • Admin@Missions#26
+   • M!ss10ns_2026
+
+❌ Mauvais exemples :
+   • password
+   • admin123
+   • 12345678
+
+Sécurité
+────────
+✅ Créez des comptes individuels (pas de partage)
+✅ Changez les mots de passe tous les 3 mois
+✅ Utilisez un gestionnaire de mots de passe
+✅ Ne partagez jamais les mots de passe par email/SMS
+✅ Gardez toujours au moins 1 compte admin actif
+
+══════════════════════════════════════════════════════════════════
+
+🧪 TESTER LA CONNEXION
+══════════════════════════════════════════════════════════════════
+
+1. Ouvrir : https://gesres-missions.pages.dev/login
+2. Saisir les identifiants du nouvel utilisateur
+3. Cliquer sur "Se connecter"
+4. Vérifier l'accès à l'interface admin
+
+══════════════════════════════════════════════════════════════════
+
+📖 DOCUMENTATION COMPLÈTE
+══════════════════════════════════════════════════════════════════
+
+Guide complet     : /home/user/webapp/GUIDE_CREATION_USERS.md
+Script automatique: /home/user/webapp/create_user.sh
+
+══════════════════════════════════════════════════════════════════
+
+🆘 DÉPANNAGE
+══════════════════════════════════════════════════════════════════
+
+Erreur "UNIQUE constraint failed"
+──────────────────────────────────
+Cause : Le nom d'utilisateur existe déjà
+Solution : Choisir un autre nom ou supprimer l'ancien
+
+Erreur "NOT NULL constraint failed"
+────────────────────────────────────
+Cause : Un champ obligatoire est manquant
+Solution : Vérifier que tous les champs sont fournis
+
+L'utilisateur ne peut pas se connecter
+───────────────────────────────────────
+Vérifications :
+✅ Le hash du mot de passe est correct
+✅ L'utilisateur existe dans la base
+✅ Le rôle est bien 'admin'
+✅ Les cookies sont activés
+
+══════════════════════════════════════════════════════════════════
+
+📞 BESOIN D'AIDE ?
+══════════════════════════════════════════════════════════════════
+
+Documentation : /home/user/webapp/GUIDE_CREATION_USERS.md
+Dashboard     : https://dash.cloudflare.com
+Base D1       : Workers & Pages → D1 → webapp-production
+
+══════════════════════════════════════════════════════════════════
+
+✅ CHECKLIST
+══════════════════════════════════════════════════════════════════
+
+Avant de créer un utilisateur :
+□ Choisir un nom d'utilisateur (format: prenom.nom)
+□ Choisir un mot de passe fort
+□ Générer le hash SHA-256
+□ Créer l'utilisateur dans la base
+□ Vérifier la création
+□ Tester la connexion
+□ Communiquer les identifiants de manière sécurisée
+□ Inviter l'utilisateur à changer son mot de passe
+
+══════════════════════════════════════════════════════════════════
+
+🚀 VOUS ÊTES PRÊT À CRÉER VOS UTILISATEURS !
+
+══════════════════════════════════════════════════════════════════
