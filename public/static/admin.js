@@ -245,10 +245,13 @@ function renderMissionsByBrigade() {
   }
   
   return `
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+    <div class="mb-4 flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-gray-800">
         <i class="fas fa-tasks mr-2"></i>Missions de ${brigade.nom} (${missions.length})
       </h3>
+      <button onclick="exportBrigadeMissionsPDF(${selectedBrigadeId})" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        <i class="fas fa-file-pdf mr-2"></i>Exporter toutes les missions
+      </button>
     </div>
     <div class="bg-white rounded-lg shadow overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
@@ -286,13 +289,16 @@ function renderMissionsByBrigade() {
                   <span class="px-2 py-1 text-xs rounded-full ${prioriteClass}">${prioriteLabel}</span>
                 </td>
                 <td class="px-4 py-3 text-sm space-x-2">
-                  <button onclick="viewAssignations(${m.id})" class="text-blue-600 hover:text-blue-800">
-                    <i class="fas fa-users"></i> Voir
+                  <button onclick="viewAssignations(${m.id})" class="text-blue-600 hover:text-blue-800" title="Voir les assignations">
+                    <i class="fas fa-users"></i>
                   </button>
-                  <button onclick="editMission(${m.id})" class="text-indigo-600 hover:text-indigo-800">
-                    <i class="fas fa-edit"></i> Éditer
+                  <button onclick="exportMissionPDF(${m.id})" class="text-green-600 hover:text-green-800" title="Exporter en PDF">
+                    <i class="fas fa-file-pdf"></i>
                   </button>
-                  <button onclick="deleteMission(${m.id})" class="text-red-600 hover:text-red-800">
+                  <button onclick="editMission(${m.id})" class="text-indigo-600 hover:text-indigo-800" title="Éditer">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button onclick="deleteMission(${m.id})" class="text-red-600 hover:text-red-800" title="Supprimer">
                     <i class="fas fa-trash"></i>
                   </button>
                 </td>
@@ -1324,4 +1330,297 @@ function injectModals() {
       </div>
     </div>
   `
+}
+
+// ==================== EXPORT PDF ====================
+
+/**
+ * Exporter une mission en PDF avec toutes ses informations et assignations
+ */
+async function exportMissionPDF(missionId) {
+  try {
+    // Charger les données
+    const [missionRes, assignationsRes] = await Promise.all([
+      axios.get(`/api/missions/${missionId}`),
+      axios.get(`/api/assignations/mission/${missionId}`)
+    ])
+    
+    const mission = missionRes.data
+    const assignations = assignationsRes.data
+    
+    // Initialiser jsPDF
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF()
+    
+    // En-tête
+    doc.setFontSize(20)
+    doc.setTextColor(37, 99, 235) // Bleu
+    doc.text('FICHE DE MISSION', 105, 20, { align: 'center' })
+    
+    // Numéro de mission
+    doc.setFontSize(14)
+    doc.setTextColor(0, 0, 0)
+    doc.text(`Mission N° ${mission.numero_mission}`, 105, 30, { align: 'center' })
+    
+    // Ligne de séparation
+    doc.setDrawColor(200, 200, 200)
+    doc.line(20, 35, 190, 35)
+    
+    let yPos = 45
+    
+    // Informations générales
+    doc.setFontSize(12)
+    doc.setFont(undefined, 'bold')
+    doc.text('INFORMATIONS GÉNÉRALES', 20, yPos)
+    yPos += 8
+    
+    doc.setFont(undefined, 'normal')
+    doc.setFontSize(10)
+    
+    // Titre
+    doc.setFont(undefined, 'bold')
+    doc.text('Titre :', 20, yPos)
+    doc.setFont(undefined, 'normal')
+    const splitTitle = doc.splitTextToSize(mission.titre, 160)
+    doc.text(splitTitle, 50, yPos)
+    yPos += splitTitle.length * 5 + 3
+    
+    // Description
+    if (mission.description) {
+      doc.setFont(undefined, 'bold')
+      doc.text('Description :', 20, yPos)
+      doc.setFont(undefined, 'normal')
+      const splitDesc = doc.splitTextToSize(mission.description, 160)
+      doc.text(splitDesc, 20, yPos + 5)
+      yPos += splitDesc.length * 5 + 8
+    }
+    
+    // Brigade et Compagnie
+    doc.setFont(undefined, 'bold')
+    doc.text('Brigade :', 20, yPos)
+    doc.setFont(undefined, 'normal')
+    doc.text(mission.brigade_nom || 'Non spécifiée', 50, yPos)
+    yPos += 6
+    
+    doc.setFont(undefined, 'bold')
+    doc.text('Compagnie :', 20, yPos)
+    doc.setFont(undefined, 'normal')
+    doc.text(mission.compagnie_nom || 'Non spécifiée', 50, yPos)
+    yPos += 8
+    
+    // Dates
+    doc.setFont(undefined, 'bold')
+    doc.text('Date de début :', 20, yPos)
+    doc.setFont(undefined, 'normal')
+    doc.text(dayjs(mission.date_debut).format('DD/MM/YYYY HH:mm'), 55, yPos)
+    yPos += 6
+    
+    doc.setFont(undefined, 'bold')
+    doc.text('Date de fin :', 20, yPos)
+    doc.setFont(undefined, 'normal')
+    doc.text(dayjs(mission.date_fin).format('DD/MM/YYYY HH:mm'), 55, yPos)
+    yPos += 8
+    
+    // Effectifs
+    doc.setFont(undefined, 'bold')
+    doc.text('Effectifs requis :', 20, yPos)
+    doc.setFont(undefined, 'normal')
+    doc.text(`${mission.effectifs_assignes || 0} / ${mission.effectifs_requis}`, 60, yPos)
+    yPos += 6
+    
+    // Priorité
+    doc.setFont(undefined, 'bold')
+    doc.text('Priorité :', 20, yPos)
+    doc.setFont(undefined, 'normal')
+    const prioriteLabel = mission.priorite === 'haute' ? 'HAUTE' : 
+                          mission.priorite === 'moyenne' ? 'Moyenne' : 'Normale'
+    doc.text(prioriteLabel, 45, yPos)
+    yPos += 10
+    
+    // Compétences requises
+    if (mission.competences_requises) {
+      doc.setFont(undefined, 'bold')
+      doc.text('Compétences requises :', 20, yPos)
+      doc.setFont(undefined, 'normal')
+      const splitComp = doc.splitTextToSize(mission.competences_requises, 160)
+      doc.text(splitComp, 20, yPos + 5)
+      yPos += splitComp.length * 5 + 10
+    }
+    
+    // Ligne de séparation
+    doc.line(20, yPos, 190, yPos)
+    yPos += 10
+    
+    // Liste des gendarmes assignés
+    doc.setFontSize(12)
+    doc.setFont(undefined, 'bold')
+    doc.text('GENDARMES ASSIGNÉS', 20, yPos)
+    yPos += 8
+    
+    // Tableau des assignations
+    const assignationsValidees = assignations.filter(a => a.statut === 'valide')
+    const assignationsAttente = assignations.filter(a => a.statut === 'en_attente')
+    const placesLibres = assignations.filter(a => a.statut === 'libre')
+    
+    const tableData = []
+    
+    // Validés
+    assignationsValidees.forEach(a => {
+      tableData.push([
+        `${a.gendarme_prenom} ${a.gendarme_nom}`,
+        a.gendarme_matricule,
+        a.gendarme_grade,
+        a.gendarme_telephone || '-',
+        'Validé'
+      ])
+    })
+    
+    // En attente
+    assignationsAttente.forEach(a => {
+      tableData.push([
+        `${a.gendarme_prenom} ${a.gendarme_nom}`,
+        a.gendarme_matricule,
+        a.gendarme_grade,
+        a.gendarme_telephone || '-',
+        'En attente'
+      ])
+    })
+    
+    // Libres
+    placesLibres.forEach(() => {
+      tableData.push([
+        'Place disponible',
+        '-',
+        '-',
+        '-',
+        'Libre'
+      ])
+    })
+    
+    doc.autoTable({
+      startY: yPos,
+      head: [['Nom', 'Matricule', 'Grade', 'Téléphone', 'Statut']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+      styles: { fontSize: 9, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 50 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 35 },
+        4: { cellWidth: 30 }
+      }
+    })
+    
+    // Pied de page
+    const pageCount = doc.internal.getNumberOfPages()
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i)
+      doc.setFontSize(8)
+      doc.setTextColor(128, 128, 128)
+      doc.text(
+        `Page ${i} sur ${pageCount} - Généré le ${dayjs().format('DD/MM/YYYY à HH:mm')}`,
+        105,
+        290,
+        { align: 'center' }
+      )
+      doc.text('GesRes - Gestion des Missions Réserve', 105, 285, { align: 'center' })
+    }
+    
+    // Télécharger
+    doc.save(`Mission_${mission.numero_mission}_${dayjs().format('YYYY-MM-DD')}.pdf`)
+    
+  } catch (error) {
+    console.error('Erreur export PDF:', error)
+    alert('❌ Erreur lors de l\'export PDF : ' + error.message)
+  }
+}
+
+/**
+ * Exporter toutes les missions d'une brigade en PDF
+ */
+async function exportBrigadeMissionsPDF(brigadeId) {
+  try {
+    const brigade = allBrigades.find(b => b.id === brigadeId)
+    if (!brigade) {
+      alert('Brigade non trouvée')
+      return
+    }
+    
+    const missions = allMissions.filter(m => m.brigade_id === brigadeId)
+    
+    if (missions.length === 0) {
+      alert('Aucune mission pour cette brigade')
+      return
+    }
+    
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF()
+    
+    // En-tête
+    doc.setFontSize(18)
+    doc.setTextColor(37, 99, 235)
+    doc.text('LISTE DES MISSIONS', 105, 20, { align: 'center' })
+    
+    doc.setFontSize(14)
+    doc.setTextColor(0, 0, 0)
+    doc.text(brigade.nom, 105, 28, { align: 'center' })
+    
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    doc.text(`${brigade.compagnie_nom || ''}`, 105, 34, { align: 'center' })
+    
+    // Ligne de séparation
+    doc.setDrawColor(200, 200, 200)
+    doc.line(20, 38, 190, 38)
+    
+    // Tableau des missions
+    const tableData = missions.map(m => [
+      m.numero_mission,
+      m.titre,
+      dayjs(m.date_debut).format('DD/MM/YYYY'),
+      dayjs(m.date_fin).format('DD/MM/YYYY'),
+      `${m.effectifs_assignes || 0}/${m.effectifs_requis}`,
+      m.priorite === 'haute' ? 'Haute' : m.priorite === 'moyenne' ? 'Moyenne' : 'Normale'
+    ])
+    
+    doc.autoTable({
+      startY: 45,
+      head: [['N° Mission', 'Titre', 'Début', 'Fin', 'Effectifs', 'Priorité']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+      styles: { fontSize: 9, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 60 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 25 }
+      }
+    })
+    
+    // Pied de page
+    const pageCount = doc.internal.getNumberOfPages()
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i)
+      doc.setFontSize(8)
+      doc.setTextColor(128, 128, 128)
+      doc.text(
+        `Page ${i} sur ${pageCount} - Généré le ${dayjs().format('DD/MM/YYYY à HH:mm')}`,
+        105,
+        290,
+        { align: 'center' }
+      )
+      doc.text('GesRes - Gestion des Missions Réserve', 105, 285, { align: 'center' })
+    }
+    
+    doc.save(`Missions_${brigade.code}_${dayjs().format('YYYY-MM-DD')}.pdf`)
+    
+  } catch (error) {
+    console.error('Erreur export PDF:', error)
+    alert('❌ Erreur lors de l\'export PDF : ' + error.message)
+  }
 }

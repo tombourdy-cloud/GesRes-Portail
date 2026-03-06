@@ -624,3 +624,285 @@ app.get('/api/stats', async (c) => {
 })
 
 export default app
+
+// ==================== NOTIFICATIONS EMAIL ====================
+
+// Configuration Resend (à configurer via wrangler secret put RESEND_API_KEY)
+const RESEND_API_KEY = 'RESEND_API_KEY' // Sera remplacé par une variable d'environnement
+
+/**
+ * Envoyer un email via Resend API
+ */
+async function sendEmail(to: string, subject: string, html: string) {
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'GesRes <noreply@gesres.fr>',
+        to: [to],
+        subject: subject,
+        html: html
+      })
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Resend API error: ${response.statusText}`)
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Erreur envoi email:', error)
+    throw error
+  }
+}
+
+/**
+ * Template email : Nouvelle assignation
+ */
+function emailTemplateNouvelleAssignation(gendarme: any, mission: any) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+        .mission-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }
+        .button { display: inline-block; background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">🎖️ Nouvelle Mission Disponible</h1>
+          <p style="margin: 10px 0 0 0;">GesRes - Gestion des Missions Réserve</p>
+        </div>
+        <div class="content">
+          <p>Bonjour <strong>${gendarme.grade} ${gendarme.nom}</strong>,</p>
+          
+          <p>Vous avez été <strong>proposé(e)</strong> pour une nouvelle mission. Votre affectation est en attente de validation par votre chef de brigade.</p>
+          
+          <div class="mission-info">
+            <h2 style="color: #2563eb; margin-top: 0;">📋 Détails de la mission</h2>
+            <p><strong>Numéro :</strong> ${mission.numero_mission}</p>
+            <p><strong>Titre :</strong> ${mission.titre}</p>
+            <p><strong>Description :</strong> ${mission.description || 'Non spécifiée'}</p>
+            <p><strong>Brigade :</strong> ${mission.brigade_nom}</p>
+            <p><strong>Date de début :</strong> ${new Date(mission.date_debut).toLocaleString('fr-FR')}</p>
+            <p><strong>Date de fin :</strong> ${new Date(mission.date_fin).toLocaleString('fr-FR')}</p>
+            ${mission.competences_requises ? `<p><strong>Compétences requises :</strong> ${mission.competences_requises}</p>` : ''}
+          </div>
+          
+          <p><strong>⏳ Statut :</strong> <span style="color: #d97706;">En attente de validation</span></p>
+          
+          <p>Vous recevrez une nouvelle notification dès que votre affectation sera validée.</p>
+          
+          <p style="margin-top: 30px;">Cordialement,<br><strong>L'équipe GesRes</strong></p>
+        </div>
+        <div class="footer">
+          <p>Cet email est automatique, merci de ne pas y répondre.</p>
+          <p>GesRes - Gestion des Missions Réserve © 2026</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+}
+
+/**
+ * Template email : Assignation validée
+ */
+function emailTemplateAssignationValidee(gendarme: any, mission: any) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+        .mission-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #16a34a; }
+        .alert-success { background: #dcfce7; border: 1px solid #86efac; padding: 15px; border-radius: 6px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">✅ Mission Confirmée</h1>
+          <p style="margin: 10px 0 0 0;">GesRes - Gestion des Missions Réserve</p>
+        </div>
+        <div class="content">
+          <p>Bonjour <strong>${gendarme.grade} ${gendarme.nom}</strong>,</p>
+          
+          <div class="alert-success">
+            <strong>✅ Bonne nouvelle !</strong> Votre affectation pour la mission <strong>${mission.numero_mission}</strong> a été <strong>validée</strong> par votre chef de brigade.
+          </div>
+          
+          <div class="mission-info">
+            <h2 style="color: #16a34a; margin-top: 0;">📋 Récapitulatif de la mission</h2>
+            <p><strong>Numéro :</strong> ${mission.numero_mission}</p>
+            <p><strong>Titre :</strong> ${mission.titre}</p>
+            <p><strong>Description :</strong> ${mission.description || 'Non spécifiée'}</p>
+            <p><strong>Brigade :</strong> ${mission.brigade_nom}</p>
+            <p><strong>Lieu :</strong> ${mission.lieu || mission.brigade_adresse}</p>
+            <p><strong>📅 Date de début :</strong> <strong>${new Date(mission.date_debut).toLocaleString('fr-FR')}</strong></p>
+            <p><strong>📅 Date de fin :</strong> <strong>${new Date(mission.date_fin).toLocaleString('fr-FR')}</strong></p>
+            ${mission.competences_requises ? `<p><strong>Compétences requises :</strong> ${mission.competences_requises}</p>` : ''}
+          </div>
+          
+          <p><strong>📞 Contact :</strong> ${mission.brigade_telephone || 'Non spécifié'}</p>
+          
+          <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <p style="margin: 0;"><strong>⚠️ Important :</strong> Merci de vous présenter à l'heure indiquée. En cas d'empêchement, prévenez immédiatement votre chef de brigade.</p>
+          </div>
+          
+          <p style="margin-top: 30px;">Cordialement,<br><strong>L'équipe GesRes</strong></p>
+        </div>
+        <div class="footer">
+          <p>Cet email est automatique, merci de ne pas y répondre.</p>
+          <p>GesRes - Gestion des Missions Réserve © 2026</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+}
+
+/**
+ * Template email : Rappel avant mission (48h avant)
+ */
+function emailTemplateRappelMission(gendarme: any, mission: any) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+        .mission-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }
+        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">⏰ Rappel de Mission</h1>
+          <p style="margin: 10px 0 0 0;">GesRes - Gestion des Missions Réserve</p>
+        </div>
+        <div class="content">
+          <p>Bonjour <strong>${gendarme.grade} ${gendarme.nom}</strong>,</p>
+          
+          <p>Nous vous rappelons que votre mission <strong>${mission.numero_mission}</strong> commence dans <strong>48 heures</strong>.</p>
+          
+          <div class="mission-info">
+            <h2 style="color: #f59e0b; margin-top: 0;">📋 Détails de la mission</h2>
+            <p><strong>Numéro :</strong> ${mission.numero_mission}</p>
+            <p><strong>Titre :</strong> ${mission.titre}</p>
+            <p><strong>Brigade :</strong> ${mission.brigade_nom}</p>
+            <p><strong>Lieu :</strong> ${mission.lieu || mission.brigade_adresse}</p>
+            <p><strong>📅 Date de début :</strong> <strong style="color: #dc2626;">${new Date(mission.date_debut).toLocaleString('fr-FR')}</strong></p>
+            <p><strong>📅 Date de fin :</strong> ${new Date(mission.date_fin).toLocaleString('fr-FR')}</p>
+            <p><strong>📞 Contact :</strong> ${mission.brigade_telephone || 'Non spécifié'}</p>
+          </div>
+          
+          <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <p style="margin: 0;"><strong>⚠️ Rappel :</strong> Merci de vous présenter à l'heure indiquée avec votre équipement complet. En cas d'empêchement, prévenez immédiatement votre chef de brigade.</p>
+          </div>
+          
+          <p style="margin-top: 30px;">Bon courage pour cette mission,<br><strong>L'équipe GesRes</strong></p>
+        </div>
+        <div class="footer">
+          <p>Cet email est automatique, merci de ne pas y répondre.</p>
+          <p>GesRes - Gestion des Missions Réserve © 2026</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+}
+
+// POST /api/notifications/nouvelle-assignation - Envoyer notification nouvelle assignation
+app.post('/api/notifications/nouvelle-assignation', async (c) => {
+  const { DB } = c.env
+  const { assignation_id } = await c.req.json()
+  
+  try {
+    // Récupérer les infos de l'assignation, gendarme et mission
+    const data = await DB.prepare(`
+      SELECT 
+        g.*,
+        m.*,
+        b.nom as brigade_nom,
+        b.adresse as brigade_adresse,
+        b.telephone as brigade_telephone
+      FROM assignations a
+      JOIN gendarmes g ON a.gendarme_id = g.id
+      JOIN missions m ON a.mission_id = m.id
+      JOIN brigades b ON m.brigade_id = b.id
+      WHERE a.id = ?
+    `).bind(assignation_id).first()
+    
+    if (!data || !data.email) {
+      return c.json({ error: 'Email non disponible' }, 400)
+    }
+    
+    const subject = `🎖️ Nouvelle mission disponible - ${data.numero_mission}`
+    const html = emailTemplateNouvelleAssignation(data, data)
+    
+    await sendEmail(data.email, subject, html)
+    
+    return c.json({ message: 'Email envoyé avec succès' })
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500)
+  }
+})
+
+// POST /api/notifications/assignation-validee - Envoyer notification assignation validée
+app.post('/api/notifications/assignation-validee', async (c) => {
+  const { DB } = c.env
+  const { assignation_id } = await c.req.json()
+  
+  try {
+    const data = await DB.prepare(`
+      SELECT 
+        g.*,
+        m.*,
+        b.nom as brigade_nom,
+        b.adresse as brigade_adresse,
+        b.telephone as brigade_telephone
+      FROM assignations a
+      JOIN gendarmes g ON a.gendarme_id = g.id
+      JOIN missions m ON a.mission_id = m.id
+      JOIN brigades b ON m.brigade_id = b.id
+      WHERE a.id = ?
+    `).bind(assignation_id).first()
+    
+    if (!data || !data.email) {
+      return c.json({ error: 'Email non disponible' }, 400)
+    }
+    
+    const subject = `✅ Mission confirmée - ${data.numero_mission}`
+    const html = emailTemplateAssignationValidee(data, data)
+    
+    await sendEmail(data.email, subject, html)
+    
+    return c.json({ message: 'Email envoyé avec succès' })
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500)
+  }
+})
+
