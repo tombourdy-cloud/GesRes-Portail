@@ -826,6 +826,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   // FORM - MISSION
   document.getElementById('form-mission').addEventListener('submit', async function(e) {
     e.preventDefault()
+    console.log('📝 Formulaire mission soumis')
+    
     const data = {
       numero_mission: document.getElementById('mission-numero').value,
       titre: document.getElementById('mission-titre').value,
@@ -838,12 +840,17 @@ document.addEventListener('DOMContentLoaded', async function() {
       priorite: document.getElementById('mission-priorite').value
     }
     
+    console.log('📦 Données mission:', data)
+    
     try {
       if (editingMissionId) {
+        console.log('✏️ Modification mission ID:', editingMissionId)
         await axios.put(`/api/missions/${editingMissionId}`, data)
         alert('Mission modifiée avec succès')
       } else {
-        await axios.post('/api/missions', data)
+        console.log('🚀 Création nouvelle mission...')
+        const response = await axios.post('/api/missions', data)
+        console.log('✅ Réponse:', response.data)
         alert('Mission créée avec succès')
       }
       document.getElementById('modal-mission').classList.add('hidden')
@@ -852,7 +859,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       allMissions = response.data
       renderCompagnieCards()
     } catch (error) {
-      alert('Erreur: ' + error.message)
+      console.error('❌ Erreur création mission:', error)
+      console.error('❌ Détails:', error.response?.data)
+      alert('Erreur: ' + (error.response?.data?.error || error.message))
     }
   })
   
