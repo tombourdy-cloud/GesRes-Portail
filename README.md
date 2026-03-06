@@ -132,11 +132,20 @@
 #### 🎖️ Gestion des Affectations
 - Visualisation par mission des effectifs requis
 - Assignation de gendarmes (statut : libre → en attente → validé)
+- **Modification d'affectation** : Changer le gendarme assigné sur une mission
 - États possibles :
   - **Libre** (gris) : place disponible
   - **En attente** (jaune) : gendarme proposé, validation requise
   - **Validé** (vert) : assignation confirmée
-- Actions : affecter, valider, rejeter, libérer
+- Actions disponibles par statut :
+  - **Place libre** : Assigner un gendarme
+  - **En attente** : Modifier, Valider, Rejeter
+  - **Validé** : Modifier, Libérer
+- Workflow de modification :
+  1. Cliquer sur "✏️ Modifier"
+  2. Choisir un nouveau gendarme dans le dropdown
+  3. Confirmer : le statut passe automatiquement à "En attente"
+  4. Valider l'assignation pour confirmation finale
 
 #### 🎨 Personnalisation
 - **Logo/écusson personnalisable** :
@@ -310,7 +319,8 @@ npx wrangler pages secret put JWT_SECRET --project-name webapp
 - `POST /api/gendarmes` - Créer un gendarme
 - `GET /api/gendarmes` - Liste des gendarmes
 - `GET /api/assignations/mission/:missionId` - Assignations par mission
-- `PUT /api/assignations/:id` - Modifier une assignation
+- `POST /api/assignations` - Créer une nouvelle assignation (place supplémentaire)
+- `PUT /api/assignations/:id` - Modifier une assignation (assigner/valider/rejeter/libérer/modifier gendarme)
 - `PUT /api/settings/:key` - Modifier un paramètre
 
 ---
@@ -596,6 +606,44 @@ npm run db:reset
 ---
 
 ## 📅 Historique des versions
+
+### Version 3.8 (2026-03-06)
+- ✅ **Modification d'affectation de gendarme** :
+  - Ajout du bouton "✏️ Modifier" pour les assignations validées et en attente
+  - Modal de modification avec dropdown de gendarmes disponibles
+  - Fonction `modifyAssignation()` : affiche modal temporaire avec liste des gendarmes
+  - Fonction `confirmModifyAssignation()` : met à jour l'assignation et change le statut à "En attente"
+  - Pré-sélection du gendarme actuellement assigné dans le dropdown
+  - Fermeture automatique du modal après confirmation
+  - Rechargement automatique de la liste des assignations et des missions
+  - Statut automatiquement passé à "En attente" après modification (nécessite re-validation)
+  - Suppression du bouton "🔘 Ajouter une place supplémentaire"
+  - Workflow cohérent : Modifier → Choisir nouveau gendarme → Valider l'assignation
+
+### Version 3.7 (2026-03-06)
+- ✅ **Corrections modals et gestion des places** :
+  - Fermeture du modal assignations par clic sur le fond
+  - Ajout de `addNewAssignation()` pour créer une place supplémentaire
+  - Bouton "Ajouter une place supplémentaire" quand aucune place libre
+  - API POST `/api/assignations` pour créer une nouvelle assignation
+  - Incrémentation automatique de `effectifs_requis` lors de l'ajout de place
+
+### Version 3.6 (2026-03-06)
+- ✅ **Export PDF des missions et assignations** :
+  - Bibliothèques jsPDF 2.5.1 + jsPDF-AutoTable 3.8.2 (CDN)
+  - Export PDF individuel par mission (bouton vert avec icône PDF)
+  - Export PDF groupé de toutes les missions d'une brigade
+  - Contenu PDF : en-tête, détails mission, tableau assignations, pied de page
+  - Noms de fichiers automatiques : `Mission_M2026-001_2026-03-06.pdf` et `Missions_BPC_2026-03-06.pdf`
+- ✅ **Système de notifications email** :
+  - Intégration Resend API pour envoi d'emails
+  - Templates HTML pour 3 types de notifications :
+    - Nouvelle assignation (notification au gendarme)
+    - Assignation validée (confirmation)
+    - Rappel 48h avant début de mission
+  - Routes API : `POST /api/notifications/nouvelle-assignation` et `/api/notifications/assignation-validee`
+  - Configuration via secret Cloudflare : `RESEND_API_KEY`
+  - Design professionnel avec logo, couleurs Gendarmerie, footer
 
 ### Version 3.5 (2026-03-06)
 - ✅ **Correction bouton "Voir" pour les assignations** :
