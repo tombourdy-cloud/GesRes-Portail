@@ -8,7 +8,12 @@
 
 ## 🌐 URLs d'accès
 
-### Production (Sandbox)
+### Production (Cloudflare Pages)
+- **Page publique**: https://gesres-missions.pages.dev
+- **Page de connexion admin**: https://gesres-missions.pages.dev/login
+- **Interface d'administration**: https://gesres-missions.pages.dev/admin
+
+### Sandbox (Développement)
 - **Page publique**: https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai
 - **Page de connexion admin**: https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai/login
 - **Interface d'administration**: https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai/admin
