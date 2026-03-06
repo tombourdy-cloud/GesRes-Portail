@@ -382,8 +382,11 @@ function renderAdminGendarmes(gendarmes) {
                 </span>
               </td>
               <td class="px-4 py-3 text-sm">
-                <button onclick="editGendarme(${g.id})" class="text-indigo-600 hover:text-indigo-800">
+                <button onclick="editGendarme(${g.id})" class="text-indigo-600 hover:text-indigo-800 mr-3">
                   <i class="fas fa-edit"></i> Modifier
+                </button>
+                <button onclick="deleteGendarme(${g.id})" class="text-red-600 hover:text-red-800">
+                  <i class="fas fa-trash"></i> Supprimer
                 </button>
               </td>
             </tr>
@@ -621,6 +624,28 @@ function editGendarme(gendarmeId) {
   document.getElementById('gendarme-email').value = gendarme.email || ''
   
   document.getElementById('modal-gendarme').classList.remove('hidden')
+}
+
+async function deleteGendarme(gendarmeId) {
+  const gendarme = allGendarmes.find(g => g.id === gendarmeId)
+  if (!gendarme) return
+  
+  if (!confirm(`Voulez-vous vraiment supprimer le gendarme ${gendarme.prenom} ${gendarme.nom} (${gendarme.matricule}) ?`)) {
+    return
+  }
+  
+  try {
+    await axios.delete(`/api/gendarmes/${gendarmeId}`)
+    // Recharger les gendarmes
+    const response = await axios.get('/api/gendarmes')
+    allGendarmes = response.data
+    filteredGendarmes = allGendarmes
+    renderAdminGendarmes(filteredGendarmes)
+    alert('Gendarme supprimé avec succès')
+  } catch (error) {
+    console.error('Erreur suppression gendarme:', error)
+    alert('Erreur: ' + (error.response?.data?.error || error.message))
+  }
 }
 
 // VIEW ASSIGNATIONS
@@ -896,6 +921,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   // FORM - GENDARME
   document.getElementById('form-gendarme').addEventListener('submit', async function(e) {
     e.preventDefault()
+    console.log('📝 Formulaire gendarme soumis')
+    
     const data = {
       matricule: document.getElementById('gendarme-matricule').value,
       nom: document.getElementById('gendarme-nom').value,
@@ -906,17 +933,24 @@ document.addEventListener('DOMContentLoaded', async function() {
       email: document.getElementById('gendarme-email').value || null
     }
     
+    console.log('📦 Données gendarme:', data)
+    
     try {
-      await axios.post('/api/gendarmes', data)
+      console.log('🚀 Envoi POST /api/gendarmes...')
+      const response = await axios.post('/api/gendarmes', data)
+      console.log('✅ Réponse:', response.data)
+      
       document.getElementById('modal-gendarme').classList.add('hidden')
       // Recharger seulement les gendarmes
-      const response = await axios.get('/api/gendarmes')
-      allGendarmes = response.data
+      const listResponse = await axios.get('/api/gendarmes')
+      allGendarmes = listResponse.data
       filteredGendarmes = allGendarmes
       renderAdminGendarmes(filteredGendarmes)
-      alert('Gendarme ajouté')
+      alert('Gendarme ajouté avec succès !')
     } catch (error) {
-      alert('Erreur: ' + error.message)
+      console.error('❌ Erreur création gendarme:', error)
+      console.error('❌ Détails:', error.response?.data)
+      alert('Erreur: ' + (error.response?.data?.error || error.message))
     }
   })
   
@@ -995,7 +1029,13 @@ document.addEventListener('DOMContentLoaded', async function() {
   })
   
   // SEARCH
-  document.getElementById('search-gendarme').addEventListener('input', searchGendarme)
+  const searchInput = document.getElementById('search-gendarme')
+  if (searchInput) {
+    searchInput.addEventListener('input', searchGendarme)
+    console.log('✅ Événement recherche attaché')
+  } else {
+    console.error('❌ Élément search-gendarme introuvable')
+  }
 })
 
 // FONCTION - Réinitialiser le logo

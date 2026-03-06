@@ -470,16 +470,21 @@ app.get('/api/gendarmes/:id', async (c) => {
 // POST /api/gendarmes - Créer un nouveau gendarme
 app.post('/api/gendarmes', async (c) => {
   const { DB } = c.env
-  const body = await c.req.json()
   
-  const { matricule, nom, prenom, grade, specialite, telephone, email } = body
-  
-  const result = await DB.prepare(`
-    INSERT INTO gendarmes (matricule, nom, prenom, grade, specialite, telephone, email)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).bind(matricule, nom, prenom, grade, specialite, telephone, email).run()
-  
-  return c.json({ id: result.meta.last_row_id, message: 'Gendarme créé avec succès' }, 201)
+  try {
+    const body = await c.req.json()
+    const { matricule, nom, prenom, grade, specialite, telephone, email } = body
+    
+    const result = await DB.prepare(`
+      INSERT INTO gendarmes (matricule, nom, prenom, grade, specialite, telephone, email)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(matricule, nom, prenom, grade, specialite || null, telephone || null, email || null).run()
+    
+    return c.json({ id: result.meta.last_row_id, message: 'Gendarme créé avec succès' }, 201)
+  } catch (error) {
+    console.error('Erreur création gendarme:', error)
+    return c.json({ error: 'Erreur lors de la création du gendarme: ' + error.message }, 500)
+  }
 })
 
 // PUT /api/gendarmes/:id - Mettre à jour un gendarme
