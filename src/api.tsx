@@ -647,27 +647,38 @@ app.post('/api/assignations', async (c) => {
 app.put('/api/assignations/:id', async (c) => {
   const { DB } = c.env
   const id = c.req.param('id')
-  const body = await c.req.json()
   
-  const { gendarme_id, statut, commentaire } = body
-  
-  let query = ''
-  let params: any[] = []
-  
-  if (statut === 'libre') {
-    query = `UPDATE assignations SET gendarme_id = NULL, statut = 'libre', commentaire = ?, assigned_at = NULL, validated_at = NULL WHERE id = ?`
-    params = [commentaire || null, id]
-  } else if (statut === 'en_attente') {
-    query = `UPDATE assignations SET gendarme_id = ?, statut = 'en_attente', commentaire = ?, assigned_at = CURRENT_TIMESTAMP, validated_at = NULL WHERE id = ?`
-    params = [gendarme_id, commentaire || null, id]
-  } else if (statut === 'valide') {
-    query = `UPDATE assignations SET gendarme_id = ?, statut = 'valide', commentaire = ?, assigned_at = COALESCE(assigned_at, CURRENT_TIMESTAMP), validated_at = CURRENT_TIMESTAMP WHERE id = ?`
-    params = [gendarme_id, commentaire || null, id]
+  try {
+    const body = await c.req.json()
+    let { gendarme_id, statut, commentaire } = body
+    
+    // Si gendarme_id n'est pas fourni et qu'on valide, récupérer l'actuel
+    if (statut === 'valide' && !gendarme_id) {
+      const current = await DB.prepare(`SELECT gendarme_id FROM assignations WHERE id = ?`).bind(id).first()
+      gendarme_id = current?.gendarme_id
+    }
+    
+    let query = ''
+    let params: any[] = []
+    
+    if (statut === 'libre') {
+      query = `UPDATE assignations SET gendarme_id = NULL, statut = 'libre', commentaire = ?, assigned_at = NULL, validated_at = NULL WHERE id = ?`
+      params = [commentaire || null, id]
+    } else if (statut === 'en_attente') {
+      query = `UPDATE assignations SET gendarme_id = ?, statut = 'en_attente', commentaire = ?, assigned_at = CURRENT_TIMESTAMP, validated_at = NULL WHERE id = ?`
+      params = [gendarme_id, commentaire || null, id]
+    } else if (statut === 'valide') {
+      query = `UPDATE assignations SET gendarme_id = ?, statut = 'valide', commentaire = ?, assigned_at = COALESCE(assigned_at, CURRENT_TIMESTAMP), validated_at = CURRENT_TIMESTAMP WHERE id = ?`
+      params = [gendarme_id, commentaire || null, id]
+    }
+    
+    await DB.prepare(query).bind(...params).run()
+    
+    return c.json({ message: 'Assignation mise à jour avec succès' })
+  } catch (error) {
+    console.error('Erreur mise à jour assignation:', error)
+    return c.json({ error: 'Erreur lors de la mise à jour: ' + error.message }, 500)
   }
-  
-  await DB.prepare(query).bind(...params).run()
-  
-  return c.json({ message: 'Assignation mise à jour avec succès' })
 })
 
 // ==================== CONFIG ====================

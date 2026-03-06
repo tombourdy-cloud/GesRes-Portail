@@ -1116,15 +1116,23 @@ async function confirmAssign(assignationId, missionId) {
 
 async function validateAssignation(assignationId, gendarmeId, missionId) {
   if (!confirm('Valider cette affectation ?')) return
+  
+  console.log('✅ Validation assignation:', assignationId, 'gendarme:', gendarmeId, 'mission:', missionId)
+  
   try {
-    await axios.put(`/api/assignations/${assignationId}`, { statut: 'valide' })
+    const response = await axios.put(`/api/assignations/${assignationId}`, { statut: 'valide' })
+    console.log('✅ Réponse:', response.data)
+    
     await viewAssignations(missionId)
     // Recharger missions
-    const response = await axios.get('/api/missions')
-    allMissions = response.data
+    const missionsResponse = await axios.get('/api/missions')
+    allMissions = missionsResponse.data
     renderCompagnieCards()
+    alert('Affectation validée avec succès')
   } catch (error) {
-    alert('Erreur: ' + error.message)
+    console.error('❌ Erreur validation:', error)
+    console.error('❌ Détails:', error.response?.data)
+    alert('Erreur: ' + (error.response?.data?.error || error.message))
   }
 }
 
