@@ -597,6 +597,18 @@ npm run db:reset
 
 ## 📅 Historique des versions
 
+### Version 3.5 (2026-03-06)
+- ✅ **Correction bouton "Voir" pour les assignations** :
+  - Ajout de la route API manquante `GET /api/assignations/mission/:missionId`
+  - Récupération des assignations avec détails complets des gendarmes (JOIN)
+  - Tri automatique des assignations : Validés → En attente → Libres
+  - Modal fonctionnel avec affichage des 3 statuts (Libre/En attente/Validé)
+  - Actions complètes : Assigner, Valider, Rejeter, Libérer
+  - Rechargement automatique après chaque action
+  - Liste déroulante des gendarmes disponibles pour assignation
+  - Confirmations avant actions critiques
+  - Compteur d'effectifs mis à jour en temps réel
+
 ### Version 3.4 (2026-03-05)
 - ✅ **Téléversement de fichier pour le logo/blason** :
   - Ajout d'un champ de sélection de fichier (input type="file")
