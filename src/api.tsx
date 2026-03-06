@@ -505,6 +505,38 @@ app.put('/api/gendarmes/:id', async (c) => {
   return c.json({ message: 'Gendarme mis à jour avec succès' })
 })
 
+// DELETE /api/gendarmes/:id - Supprimer un gendarme
+app.delete('/api/gendarmes/:id', async (c) => {
+  const { DB } = c.env
+  const id = c.req.param('id')
+  
+  try {
+    // Vérifier si le gendarme a des assignations actives
+    const assignations = await DB.prepare(`
+      SELECT COUNT(*) as count 
+      FROM assignations 
+      WHERE gendarme_id = ? AND statut IN ('valide', 'en_attente')
+    `).bind(id).first()
+    
+    if (assignations && assignations.count > 0) {
+      return c.json({ 
+        error: `Impossible de supprimer ce gendarme. Il a ${assignations.count} mission(s) active(s).` 
+      }, 400)
+    }
+    
+    // Supprimer d'abord toutes les assignations du gendarme
+    await DB.prepare(`DELETE FROM assignations WHERE gendarme_id = ?`).bind(id).run()
+    
+    // Puis supprimer le gendarme
+    await DB.prepare(`DELETE FROM gendarmes WHERE id = ?`).bind(id).run()
+    
+    return c.json({ message: 'Gendarme supprimé avec succès' })
+  } catch (error) {
+    console.error('Erreur suppression gendarme:', error)
+    return c.json({ error: 'Erreur lors de la suppression: ' + error.message }, 500)
+  }
+})
+
 // ==================== ASSIGNATIONS ====================
 
 // GET /api/assignations/mission/:missionId - Récupérer les assignations d'une mission

@@ -731,7 +731,17 @@ async function viewAssignations(missionId) {
 
 // SEARCH FUNCTIONS
 function searchGendarme() {
-  const searchTerm = document.getElementById('search-gendarme').value.toLowerCase()
+  console.log('🔍 searchGendarme appelée')
+  const searchInput = document.getElementById('search-gendarme')
+  if (!searchInput) {
+    console.error('❌ search-gendarme introuvable dans searchGendarme')
+    return
+  }
+  
+  const searchTerm = searchInput.value.toLowerCase()
+  console.log('🔍 Terme de recherche:', searchTerm)
+  console.log('📊 Total gendarmes:', allGendarmes.length)
+  
   if (!searchTerm) {
     filteredGendarmes = allGendarmes
   } else {
@@ -740,11 +750,13 @@ function searchGendarme() {
       g.nom.toLowerCase().includes(searchTerm) ||
       g.prenom.toLowerCase().includes(searchTerm) ||
       g.grade.toLowerCase().includes(searchTerm) ||
-      g.specialite.toLowerCase().includes(searchTerm) ||
+      (g.specialite && g.specialite.toLowerCase().includes(searchTerm)) ||
       (g.telephone && g.telephone.includes(searchTerm)) ||
       (g.email && g.email.toLowerCase().includes(searchTerm))
     )
   }
+  
+  console.log('✅ Gendarmes filtrés:', filteredGendarmes.length)
   renderAdminGendarmes(filteredGendarmes)
 }
 
