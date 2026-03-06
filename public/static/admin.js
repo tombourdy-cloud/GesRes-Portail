@@ -31,7 +31,14 @@ async function logout() {
 async function loadLogo() {
   try {
     const response = await axios.get('/api/config/logo_url')
-    if (response.data.value) document.getElementById('nav-logo').src = response.data.value
+    if (response.data.value) {
+      document.getElementById('nav-logo').src = response.data.value
+      // Mettre à jour aussi l'aperçu dans les paramètres si la page est chargée
+      const previewElement = document.getElementById('current-logo-preview')
+      if (previewElement) {
+        previewElement.src = response.data.value
+      }
+    }
   } catch (error) {
     console.error('Erreur chargement logo:', error)
   }
@@ -871,23 +878,103 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   })
   
-  // FORM - LOGO
+  // FORM - LOGO - Aperçu fichier lors de la sélection
+  const logoFileInput = document.getElementById('logo-file')
+  logoFileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0]
+    if (!file) {
+      document.getElementById('file-preview').classList.add('hidden')
+      return
+    }
+    
+    // Vérifier la taille (max 2 Mo)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('L\'image est trop volumineuse. Taille maximale : 2 Mo')
+      e.target.value = ''
+      return
+    }
+    
+    // Afficher l'aperçu
+    const reader = new FileReader()
+    reader.onload = function(event) {
+      document.getElementById('file-preview-img').src = event.target.result
+      document.getElementById('file-preview').classList.remove('hidden')
+    }
+    reader.readAsDataURL(file)
+  })
+  
+  // FORM - LOGO - Soumission
   document.getElementById('form-logo').addEventListener('submit', async function(e) {
     e.preventDefault()
+    
+    const logoFile = document.getElementById('logo-file').files[0]
     const logoUrl = document.getElementById('logo-url').value
     
     try {
-      await axios.put('/api/config/logo_url', { value: logoUrl })
-      document.getElementById('nav-logo').src = logoUrl
-      alert('Logo mis à jour')
+      let finalLogoUrl = ''
+      
+      // Priorité au fichier téléversé
+      if (logoFile) {
+        // Convertir le fichier en base64
+        const reader = new FileReader()
+        reader.onload = async function(event) {
+          const base64Data = event.target.result
+          
+          try {
+            await axios.put('/api/config/logo_url', { value: base64Data })
+            document.getElementById('nav-logo').src = base64Data
+            document.getElementById('current-logo-preview').src = base64Data
+            alert('✅ Logo téléversé et enregistré avec succès !')
+            
+            // Réinitialiser le formulaire
+            document.getElementById('logo-file').value = ''
+            document.getElementById('logo-url').value = ''
+            document.getElementById('file-preview').classList.add('hidden')
+          } catch (error) {
+            alert('❌ Erreur lors de l\'enregistrement : ' + error.message)
+          }
+        }
+        reader.readAsDataURL(logoFile)
+      } 
+      // Sinon, utiliser l'URL
+      else if (logoUrl) {
+        await axios.put('/api/config/logo_url', { value: logoUrl })
+        document.getElementById('nav-logo').src = logoUrl
+        document.getElementById('current-logo-preview').src = logoUrl
+        alert('✅ Logo mis à jour avec l\'URL fournie !')
+        document.getElementById('logo-url').value = ''
+      } 
+      else {
+        alert('⚠️ Veuillez sélectionner un fichier ou entrer une URL')
+      }
     } catch (error) {
-      alert('Erreur: ' + error.message)
+      alert('❌ Erreur : ' + error.message)
     }
   })
   
   // SEARCH
   document.getElementById('search-gendarme').addEventListener('input', searchGendarme)
 })
+
+// FONCTION - Réinitialiser le logo
+async function resetLogo() {
+  if (!confirm('Voulez-vous vraiment réinitialiser le logo au logo par défaut ?')) {
+    return
+  }
+  
+  try {
+    const defaultLogo = '/static/default-logo.png'
+    await axios.put('/api/config/logo_url', { value: defaultLogo })
+    document.getElementById('nav-logo').src = defaultLogo
+    document.getElementById('current-logo-preview').src = defaultLogo
+    document.getElementById('logo-file').value = ''
+    document.getElementById('logo-url').value = ''
+    document.getElementById('file-preview').classList.add('hidden')
+    alert('✅ Logo réinitialisé au logo par défaut')
+  } catch (error) {
+    alert('❌ Erreur : ' + error.message)
+  }
+}
 
 // ASSIGNATIONS
 async function rejectAssignation(assignationId, missionId) {

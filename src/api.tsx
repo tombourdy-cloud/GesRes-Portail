@@ -544,6 +544,29 @@ app.post('/api/config', async (c) => {
   return c.json({ message: 'Configuration mise à jour' })
 })
 
+// PUT /api/config/:key - Mettre à jour une valeur de config (méthode alternative)
+app.put('/api/config/:key', async (c) => {
+  const { DB } = c.env
+  const key = c.req.param('key')
+  const { value } = await c.req.json()
+  
+  // Vérifier la taille pour les images base64 (limite à 5 Mo de données)
+  if (key === 'logo_url' && value && value.startsWith('data:image/')) {
+    const sizeInBytes = value.length * 0.75 // Estimation de la taille décodée
+    if (sizeInBytes > 5 * 1024 * 1024) {
+      return c.json({ error: 'Image trop volumineuse (max 5 Mo)' }, 400)
+    }
+  }
+  
+  await DB.prepare(`
+    INSERT INTO config (key, value, updated_at) 
+    VALUES (?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = CURRENT_TIMESTAMP
+  `).bind(key, value, value).run()
+  
+  return c.json({ message: 'Configuration mise à jour', key, value: value.length > 100 ? `${value.substring(0, 100)}...` : value })
+})
+
 // ==================== STATS ====================
 
 // GET /api/stats - Statistiques générales

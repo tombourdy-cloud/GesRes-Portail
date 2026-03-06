@@ -233,15 +233,58 @@ app.get('/admin', (c) => {
                     <h3 class="text-lg font-semibold mb-4">
                         <i class="fas fa-image mr-2"></i>Logo / Écusson
                     </h3>
+                    
+                    <!-- Aperçu du logo actuel -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2">Aperçu actuel</label>
+                        <div class="flex items-center gap-4">
+                            <img id="current-logo-preview" src="/static/default-logo.png" alt="Logo actuel" 
+                                 class="h-24 w-24 object-contain border-2 border-gray-300 rounded-lg p-2 bg-white">
+                            <div class="text-sm text-gray-600">
+                                <p>Ce logo est affiché en haut de toutes les pages</p>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <form id="form-logo">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">URL de l'image</label>
+                        <!-- Option 1: Téléverser un fichier -->
+                        <div class="mb-6 p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50">
+                            <label class="block text-sm font-semibold mb-2 text-blue-900">
+                                <i class="fas fa-upload mr-2"></i>Option 1 : Téléverser une image depuis votre ordinateur
+                            </label>
+                            <input type="file" id="logo-file" accept="image/png,image/jpeg,image/jpg,image/gif,image/svg+xml"
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                            <p class="text-xs text-gray-600 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>Formats acceptés : PNG, JPG, GIF, SVG (max 2 Mo)
+                            </p>
+                            <!-- Aperçu du fichier sélectionné -->
+                            <div id="file-preview" class="hidden mt-4">
+                                <label class="block text-sm font-medium mb-2">Aperçu de l'image sélectionnée</label>
+                                <img id="file-preview-img" src="" alt="Aperçu" 
+                                     class="h-32 w-32 object-contain border-2 border-green-300 rounded-lg p-2 bg-white">
+                            </div>
+                        </div>
+                        
+                        <!-- Option 2: URL externe -->
+                        <div class="mb-6 p-4 border-2 border-gray-300 rounded-lg">
+                            <label class="block text-sm font-semibold mb-2">
+                                <i class="fas fa-link mr-2"></i>Option 2 : URL d'une image en ligne
+                            </label>
                             <input type="url" id="logo-url" placeholder="https://example.com/logo.png"
                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <p class="text-xs text-gray-600 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>Entrez l'URL complète d'une image hébergée en ligne
+                            </p>
                         </div>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            <i class="fas fa-save mr-2"></i>Enregistrer
-                        </button>
+                        
+                        <div class="flex gap-4">
+                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-save mr-2"></i>Enregistrer le logo
+                            </button>
+                            <button type="button" onclick="resetLogo()" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                                <i class="fas fa-undo mr-2"></i>Réinitialiser
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
