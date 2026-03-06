@@ -140,9 +140,15 @@
 
 #### 🎨 Personnalisation
 - **Logo/écusson personnalisable** :
-  - Upload via URL d'image
-  - Affichage sur toutes les pages
-  - Stockage dans la base de données (table `settings`)
+  - **Option 1 : Téléversement de fichier** depuis votre ordinateur
+    - Formats supportés : PNG, JPG, GIF, SVG
+    - Taille maximale : 2 Mo
+    - Aperçu en temps réel avant enregistrement
+    - Stockage en base64 dans la base de données
+  - **Option 2 : URL d'image** hébergée en ligne
+  - Aperçu du logo actuel
+  - Bouton de réinitialisation au logo par défaut
+  - Affichage sur toutes les pages (publique et admin)
 
 ---
 
@@ -590,6 +596,18 @@ npm run db:reset
 ---
 
 ## 📅 Historique des versions
+
+### Version 3.4 (2026-03-05)
+- ✅ **Téléversement de fichier pour le logo/blason** :
+  - Ajout d'un champ de sélection de fichier (input type="file")
+  - Aperçu en temps réel de l'image sélectionnée
+  - Validation de la taille (max 2 Mo)
+  - Validation des formats (PNG, JPG, GIF, SVG)
+  - Conversion automatique en base64 pour stockage en DB
+  - API PUT /api/config/:key avec validation de taille (max 5 Mo stockés)
+  - Bouton de réinitialisation au logo par défaut
+  - Affichage de l'aperçu du logo actuel dans les paramètres
+  - Double option : téléversement fichier OU URL externe
 
 ### Version 3.3 (2026-03-05)
 - ✅ **Correction modals** : Fermeture par croix X fonctionnelle sur tous les modals
