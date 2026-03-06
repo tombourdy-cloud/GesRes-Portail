@@ -160,6 +160,33 @@ app.put('/api/compagnies/:id', async (c) => {
   return c.json({ message: 'Compagnie mise à jour' })
 })
 
+// DELETE /api/compagnies/:id - Supprimer une compagnie
+app.delete('/api/compagnies/:id', async (c) => {
+  const { DB } = c.env
+  const id = c.req.param('id')
+  
+  try {
+    // Vérifier si la compagnie a des brigades
+    const brigades = await DB.prepare(`
+      SELECT COUNT(*) as count FROM brigades WHERE compagnie_id = ?
+    `).bind(id).first()
+    
+    if (brigades && brigades.count > 0) {
+      return c.json({ 
+        error: `Impossible de supprimer cette compagnie. Elle contient ${brigades.count} brigade(s).` 
+      }, 400)
+    }
+    
+    // Supprimer la compagnie
+    await DB.prepare(`DELETE FROM compagnies WHERE id = ?`).bind(id).run()
+    
+    return c.json({ message: 'Compagnie supprimée avec succès' })
+  } catch (error) {
+    console.error('Erreur suppression compagnie:', error)
+    return c.json({ error: 'Erreur lors de la suppression: ' + error.message }, 500)
+  }
+})
+
 // ==================== BRIGADES ====================
 
 // GET /api/brigades - Liste des brigades
@@ -361,32 +388,49 @@ app.get('/api/missions/:id', async (c) => {
 // POST /api/missions - Créer une nouvelle mission
 app.post('/api/missions', async (c) => {
   const { DB } = c.env
-  const body = await c.req.json()
   
-  const { numero_mission, titre, description, brigade_id, date_debut, date_fin, effectifs_requis, competences_requises, priorite } = body
+  try {
+    const body = await c.req.json()
+    
+    const { numero_mission, titre, description, brigade_id, date_debut, date_fin, effectifs_requis, competences_requises, priorite } = body
+    
+    // Vérifier les champs obligatoires
+    if (!numero_mission || !titre || !brigade_id || !date_debut) {
+      return c.json({ error: 'Champs obligatoires manquants: numéro de mission, titre, brigade et date début' }, 400)
+    }
   
-  // Vérifier les champs obligatoires
-  if (!numero_mission || !titre || !brigade_id || !date_debut) {
-    return c.json({ error: 'Champs obligatoires manquants: numéro de mission, titre, brigade et date début' }, 400)
+    // Créer la mission avec valeurs par défaut
+    const result = await DB.prepare(`
+      INSERT INTO missions (numero_mission, titre, description, brigade_id, date_debut, date_fin, effectifs_requis, competences_requises, priorite)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      numero_mission, 
+      titre, 
+      description || null, 
+      brigade_id, 
+      date_debut, 
+      date_fin || null, 
+      effectifs_requis || 1, 
+      competences_requises || null, 
+      priorite || 'normale'
+    ).run()
+  
+    const missionId = result.meta.last_row_id
+    
+    // Créer les assignations libres
+    const effectifs = effectifs_requis || 1
+    for (let i = 0; i < effectifs; i++) {
+      await DB.prepare(`
+        INSERT INTO assignations (mission_id, statut)
+        VALUES (?, 'libre')
+      `).bind(missionId).run()
+    }
+    
+    return c.json({ id: missionId, message: 'Mission créée avec succès' }, 201)
+  } catch (error) {
+    console.error('Erreur création mission:', error)
+    return c.json({ error: 'Erreur lors de la création de la mission: ' + error.message }, 500)
   }
-  
-  // Créer la mission
-  const result = await DB.prepare(`
-    INSERT INTO missions (numero_mission, titre, description, brigade_id, date_debut, date_fin, effectifs_requis, competences_requises, priorite)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(numero_mission, titre, description, brigade_id, date_debut, date_fin, effectifs_requis, competences_requises, priorite || 'normale').run()
-  
-  const missionId = result.meta.last_row_id
-  
-  // Créer les assignations libres
-  for (let i = 0; i < effectifs_requis; i++) {
-    await DB.prepare(`
-      INSERT INTO assignations (mission_id, statut)
-      VALUES (?, 'libre')
-    `).bind(missionId).run()
-  }
-  
-  return c.json({ id: missionId, message: 'Mission créée avec succès' }, 201)
 })
 
 // PUT /api/missions/:id - Mettre à jour une mission
