@@ -491,6 +491,42 @@ app.put('/api/gendarmes/:id', async (c) => {
 
 // ==================== ASSIGNATIONS ====================
 
+// GET /api/assignations/mission/:missionId - Récupérer les assignations d'une mission
+app.get('/api/assignations/mission/:missionId', async (c) => {
+  const { DB } = c.env
+  const missionId = c.req.param('missionId')
+  
+  const assignations = await DB.prepare(`
+    SELECT 
+      a.id,
+      a.mission_id,
+      a.gendarme_id,
+      a.statut,
+      a.commentaire,
+      a.assigned_at,
+      a.validated_at,
+      g.matricule as gendarme_matricule,
+      g.nom as gendarme_nom,
+      g.prenom as gendarme_prenom,
+      g.grade as gendarme_grade,
+      g.specialite as gendarme_specialite,
+      g.telephone as gendarme_telephone,
+      g.email as gendarme_email
+    FROM assignations a
+    LEFT JOIN gendarmes g ON a.gendarme_id = g.id
+    WHERE a.mission_id = ?
+    ORDER BY 
+      CASE a.statut 
+        WHEN 'valide' THEN 1 
+        WHEN 'en_attente' THEN 2 
+        WHEN 'libre' THEN 3 
+      END,
+      a.id
+  `).bind(missionId).all()
+  
+  return c.json(assignations.results || [])
+})
+
 // PUT /api/assignations/:id - Mettre à jour une assignation
 app.put('/api/assignations/:id', async (c) => {
   const { DB } = c.env
