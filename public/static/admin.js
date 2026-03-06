@@ -638,18 +638,7 @@ async function viewAssignations(missionId) {
     
     const container = document.getElementById('assignations-list')
     
-    // Ajouter un bouton pour créer une nouvelle place si toutes sont prises
-    const hasFreePlaces = assignations.some(a => a.statut === 'libre')
-    const addPlaceButton = !hasFreePlaces ? `
-      <div class="mb-4">
-        <button onclick="addNewAssignation(${missionId})" class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
-          <i class="fas fa-plus-circle"></i>
-          <span>Ajouter une place supplémentaire</span>
-        </button>
-      </div>
-    ` : ''
-    
-    container.innerHTML = addPlaceButton + assignations.map(a => {
+    container.innerHTML = assignations.map(a => {
       const statusClass = a.statut === 'valide' ? 'border-green-500 bg-green-50' :
                           a.statut === 'en_attente' ? 'border-yellow-500 bg-yellow-50' :
                           'border-gray-300 bg-gray-50'
@@ -672,27 +661,33 @@ async function viewAssignations(missionId) {
                 <span class="px-2 py-1 text-xs rounded ${statusColor}">${statusLabel}</span>
               </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
               ${a.statut === 'libre' ? `
                 <select id="gendarme-select-${a.id}" class="text-sm border rounded px-2 py-1">
-                  <option value="">Choisir...</option>
+                  <option value="">Choisir un gendarme...</option>
                   ${allGendarmes.map(g => `<option value="${g.id}">${g.prenom} ${g.nom} (${g.matricule})</option>`).join('')}
                 </select>
-                <button onclick="confirmAssign(${a.id}, ${missionId})" class="text-blue-600 hover:text-blue-800">
-                  <i class="fas fa-check"></i>
+                <button onclick="confirmAssign(${a.id}, ${missionId})" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" title="Assigner">
+                  <i class="fas fa-check"></i> Assigner
                 </button>
               ` : ''}
               ${a.statut === 'en_attente' ? `
-                <button onclick="validateAssignation(${a.id}, ${a.gendarme_id}, ${missionId})" class="text-green-600 hover:text-green-800" title="Valider">
-                  <i class="fas fa-check-circle"></i>
+                <button onclick="modifyAssignation(${a.id}, ${missionId})" class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm" title="Modifier le gendarme">
+                  <i class="fas fa-edit"></i> Modifier
                 </button>
-                <button onclick="rejectAssignation(${a.id}, ${missionId})" class="text-red-600 hover:text-red-800" title="Rejeter">
-                  <i class="fas fa-times-circle"></i>
+                <button onclick="validateAssignation(${a.id}, ${a.gendarme_id}, ${missionId})" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm" title="Valider">
+                  <i class="fas fa-check-circle"></i> Valider
+                </button>
+                <button onclick="rejectAssignation(${a.id}, ${missionId})" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm" title="Rejeter">
+                  <i class="fas fa-times-circle"></i> Rejeter
                 </button>
               ` : ''}
               ${a.statut === 'valide' ? `
-                <button onclick="liberateAssignation(${a.id}, ${missionId})" class="text-orange-600 hover:text-orange-800" title="Libérer">
-                  <i class="fas fa-unlock"></i>
+                <button onclick="modifyAssignation(${a.id}, ${missionId})" class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm" title="Changer le gendarme">
+                  <i class="fas fa-edit"></i> Modifier
+                </button>
+                <button onclick="liberateAssignation(${a.id}, ${missionId})" class="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm" title="Libérer">
+                  <i class="fas fa-unlock"></i> Libérer
                 </button>
               ` : ''}
             </div>
@@ -1064,14 +1059,74 @@ async function liberateAssignation(assignationId, missionId) {
   }
 }
 
-// Ajouter une nouvelle assignation (place supplémentaire) à une mission
-async function addNewAssignation(missionId) {
+// Modifier l'affectation d'un gendarme sur une mission
+async function modifyAssignation(assignationId, missionId) {
   try {
-    // Créer une nouvelle assignation libre
-    await axios.post('/api/assignations', {
-      mission_id: missionId,
-      statut: 'libre'
+    // Récupérer l'assignation actuelle
+    const assignationRes = await axios.get(`/api/assignations/mission/${missionId}`)
+    const assignation = assignationRes.data.find(a => a.id === assignationId)
+    
+    if (!assignation) {
+      alert('Assignation introuvable')
+      return
+    }
+    
+    // Créer un modal temporaire pour choisir un nouveau gendarme
+    const modal = document.createElement('div')
+    modal.id = 'modal-modify-assignation'
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]'
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Modifier l'affectation</h3>
+          <button onclick="document.getElementById('modal-modify-assignation').remove()" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        <p class="mb-4 text-gray-600">Gendarme actuel : <strong>${assignation.gendarme_nom || 'Aucun'} ${assignation.gendarme_prenom || ''}</strong></p>
+        <label class="block mb-2 font-semibold">Nouveau gendarme :</label>
+        <select id="select-new-gendarme" class="w-full border p-2 rounded mb-4">
+          <option value="">-- Choisir --</option>
+          ${allGendarmes.map(g => `
+            <option value="${g.id}" ${g.id === assignation.gendarme_id ? 'selected' : ''}>
+              ${g.matricule} - ${g.nom} ${g.prenom} (${g.grade})
+            </option>
+          `).join('')}
+        </select>
+        <div class="flex gap-2">
+          <button onclick="document.getElementById('modal-modify-assignation').remove()" class="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+            Annuler
+          </button>
+          <button onclick="confirmModifyAssignation(${assignationId}, ${missionId})" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <i class="fas fa-check"></i> Confirmer
+          </button>
+        </div>
+      </div>
+    `
+    document.body.appendChild(modal)
+  } catch (error) {
+    alert('Erreur : ' + error.message)
+  }
+}
+
+// Confirmer la modification d'affectation
+async function confirmModifyAssignation(assignationId, missionId) {
+  const newGendarmeId = parseInt(document.getElementById('select-new-gendarme').value)
+  
+  if (!newGendarmeId) {
+    alert('Veuillez choisir un gendarme')
+    return
+  }
+  
+  try {
+    // Mettre à jour l'assignation avec le nouveau gendarme (statut: en_attente)
+    await axios.put(`/api/assignations/${assignationId}`, {
+      gendarme_id: newGendarmeId,
+      statut: 'en_attente'
     })
+    
+    // Fermer le modal de modification
+    document.getElementById('modal-modify-assignation').remove()
     
     // Rafraîchir la liste des assignations
     await viewAssignations(missionId)
@@ -1081,7 +1136,7 @@ async function addNewAssignation(missionId) {
     allMissions = response.data
     renderCompagnieCards()
     
-    alert('✅ Place supplémentaire ajoutée avec succès')
+    alert('✅ Gendarme modifié avec succès')
   } catch (error) {
     alert('❌ Erreur : ' + error.message)
   }
