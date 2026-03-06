@@ -1,3 +1,5 @@
+console.log('🚀 admin.js chargé !')
+
 dayjs.locale('fr')
 
 let allMissions = [], allGendarmes = [], allBrigades = [], allCompagnies = []
@@ -742,7 +744,10 @@ function switchTab(tabName) {
 
 // INIT
 document.addEventListener('DOMContentLoaded', async function() {
+  console.log('📄 DOM chargé, initialisation...')
+  
   const authenticated = await checkAuth()
+  console.log('🔐 Authentification:', authenticated)
   if (!authenticated) return
   
   // Précharger toutes les données en parallèle pour optimiser
@@ -756,9 +761,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   // Inject modals into page (AVANT les event listeners)
   injectModals()
-  
-  // Logout
-  document.getElementById('logout-btn').addEventListener('click', logout)
   
   // Close modals (APRÈS injection)
   document.getElementById('close-modal-mission').addEventListener('click', () => {
@@ -818,8 +820,18 @@ document.addEventListener('DOMContentLoaded', async function() {
   })
   
   // FORM - COMPAGNIE
+  console.log('🔗 Attachement du listener pour form-compagnie')
+  const formCompagnie = document.getElementById('form-compagnie')
+  if (!formCompagnie) {
+    console.error('❌ Élément form-compagnie introuvable !')
+  } else {
+    console.log('✅ Élément form-compagnie trouvé:', formCompagnie)
+  }
+  
   document.getElementById('form-compagnie').addEventListener('submit', async function(e) {
     e.preventDefault()
+    console.log('📝 Formulaire compagnie soumis')
+    
     const data = {
       nom: document.getElementById('compagnie-nom').value,
       code: document.getElementById('compagnie-code').value,
@@ -829,9 +841,16 @@ document.addEventListener('DOMContentLoaded', async function() {
       commandant: document.getElementById('compagnie-commandant').value
     }
     
+    console.log('📦 Données à envoyer:', data)
+    
     try {
-      await axios.post('/api/compagnies', data)
+      console.log('🚀 Envoi de la requête POST...')
+      const response = await axios.post('/api/compagnies', data)
+      console.log('✅ Réponse reçue:', response.data)
+      
       document.getElementById('modal-compagnie').classList.add('hidden')
+      
+      console.log('🔄 Rechargement des données...')
       // Recharger compagnies et brigades
       const [compagniesRes, brigadesRes] = await Promise.all([
         axios.get('/api/compagnies'),
@@ -839,10 +858,13 @@ document.addEventListener('DOMContentLoaded', async function() {
       ])
       allCompagnies = compagniesRes.data
       allBrigades = brigadesRes.data
+      console.log('📊 Données rechargées:', allCompagnies.length, 'compagnies')
+      
       renderAdminLieux()
-      alert('Compagnie créée')
+      alert('Compagnie créée avec succès !')
     } catch (error) {
-      alert('Erreur: ' + error.message)
+      console.error('❌ Erreur lors de la création:', error)
+      alert('Erreur: ' + (error.response?.data?.error || error.message))
     }
   })
   

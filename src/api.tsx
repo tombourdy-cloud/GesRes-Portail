@@ -212,7 +212,18 @@ app.post('/api/brigades', async (c) => {
   const result = await DB.prepare(`
     INSERT INTO brigades (compagnie_id, nom, code, adresse, telephone, email, effectifs, chef_brigade, latitude, longitude)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(compagnie_id, nom, code, adresse, telephone, email, effectifs, chef_brigade, latitude, longitude).run()
+  `).bind(
+    compagnie_id, 
+    nom, 
+    code, 
+    adresse, 
+    telephone || null, 
+    email || null, 
+    effectifs || 0, 
+    chef_brigade || null, 
+    latitude || null, 
+    longitude || null
+  ).run()
   
   return c.json({ id: result.meta.last_row_id, message: 'Brigade créée' }, 201)
 })
