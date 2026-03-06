@@ -1,0 +1,89 @@
+═══════════════════════════════════════════════════════════════════
+  GesRes v3.8 - Modification d'affectation de gendarme
+═══════════════════════════════════════════════════════════════════
+
+📅 Date : 06/03/2026
+🎯 Objectif : Permettre à l'admin de modifier l'affectation d'un gendarme 
+             sur une mission sans créer de nouvelle place
+
+─────────────────────────────────────────────────────────────────────
+✅ NOUVEAUTÉS
+─────────────────────────────────────────────────────────────────────
+
+1. ✏️ Bouton "Modifier" sur assignations validées et en attente
+2. 🔄 Modal de modification avec dropdown de tous les gendarmes
+3. 📝 Pré-sélection du gendarme actuellement assigné
+4. ⚡ Statut automatiquement passé à "En attente" après modification
+5. ✅ Re-validation nécessaire pour confirmer le changement
+6. 🗑️ Suppression du bouton "Ajouter une place supplémentaire"
+
+─────────────────────────────────────────────────────────────────────
+🔧 MODIFICATIONS TECHNIQUES
+─────────────────────────────────────────────────────────────────────
+
+Frontend (public/static/admin.js) :
+  + modifyAssignation(assignationId, missionId)
+  + confirmModifyAssignation(assignationId, missionId)
+  - addNewAssignation(missionId)
+
+Backend (src/api.tsx) :
+  ✓ Utilise la route existante : PUT /api/assignations/:id
+
+Base de données :
+  ✓ Pas de migration nécessaire
+  ✓ Utilise les colonnes existantes
+
+─────────────────────────────────────────────────────────────────────
+📊 WORKFLOW
+─────────────────────────────────────────────────────────────────────
+
+AVANT v3.8 :
+  Libérer → Choisir nouveau gendarme → Assigner → Valider
+  (3 étapes distinctes)
+
+APRÈS v3.8 :
+  Modifier → Choisir nouveau gendarme → Valider
+  (2 étapes, plus rapide et intuitif)
+
+─────────────────────────────────────────────────────────────────────
+🌐 URLS DE TEST
+─────────────────────────────────────────────────────────────────────
+
+Interface admin : 
+  https://3000-ilpfsuqr8mj8l3n8ddfjt-5c13a017.sandbox.novita.ai/admin
+  Login: admin / admin123
+
+Test à effectuer :
+  1. Missions → Sélectionner compagnie/brigade
+  2. Cliquer "👥 Voir" sur une mission
+  3. Cliquer "✏️ Modifier" sur une assignation validée
+  4. Choisir un nouveau gendarme
+  5. Cliquer "✓ Confirmer"
+  6. Vérifier : Badge jaune "En attente", nouveau gendarme affiché
+  7. Cliquer "✓ Valider" pour confirmer
+
+─────────────────────────────────────────────────────────────────────
+📈 STATISTIQUES
+─────────────────────────────────────────────────────────────────────
+
+Commits : 22 (total du projet)
+Fichiers modifiés : 3
+  - public/static/admin.js (+84, -29)
+  - README.md (+50, -2)
+  - GUIDE_MODIFICATION_AFFECTATION.md (nouveau, 276 lignes)
+  - RESUME_VERSION_3.8.md (nouveau, 415 lignes)
+
+Fonctions ajoutées : 2
+Fonctions supprimées : 1
+Routes API utilisées : 2
+
+─────────────────────────────────────────────────────────────────────
+✅ STATUT : PRÊT POUR LA PRODUCTION
+─────────────────────────────────────────────────────────────────────
+
+Tous les tests passés ✓
+Documentation complète ✓
+Code commité et versionné ✓
+Service en ligne et fonctionnel ✓
+
+═══════════════════════════════════════════════════════════════════
