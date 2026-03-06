@@ -637,7 +637,19 @@ async function viewAssignations(missionId) {
       `${mission.effectifs_assignes}/${mission.effectifs_requis} effectifs`
     
     const container = document.getElementById('assignations-list')
-    container.innerHTML = assignations.map(a => {
+    
+    // Ajouter un bouton pour créer une nouvelle place si toutes sont prises
+    const hasFreePlaces = assignations.some(a => a.statut === 'libre')
+    const addPlaceButton = !hasFreePlaces ? `
+      <div class="mb-4">
+        <button onclick="addNewAssignation(${missionId})" class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+          <i class="fas fa-plus-circle"></i>
+          <span>Ajouter une place supplémentaire</span>
+        </button>
+      </div>
+    ` : ''
+    
+    container.innerHTML = addPlaceButton + assignations.map(a => {
       const statusClass = a.statut === 'valide' ? 'border-green-500 bg-green-50' :
                           a.statut === 'en_attente' ? 'border-yellow-500 bg-yellow-50' :
                           'border-gray-300 bg-gray-50'
@@ -768,6 +780,13 @@ document.addEventListener('DOMContentLoaded', async function() {
   })
   document.getElementById('close-modal-assignations').addEventListener('click', () => {
     document.getElementById('modal-assignations').classList.add('hidden')
+  })
+  
+  // Fermer les modals en cliquant sur le fond
+  document.getElementById('modal-assignations').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-assignations') {
+      document.getElementById('modal-assignations').classList.add('hidden')
+    }
   })
   
   // FORM - MISSION
@@ -1042,6 +1061,29 @@ async function liberateAssignation(assignationId, missionId) {
     renderCompagnieCards()
   } catch (error) {
     alert('Erreur: ' + error.message)
+  }
+}
+
+// Ajouter une nouvelle assignation (place supplémentaire) à une mission
+async function addNewAssignation(missionId) {
+  try {
+    // Créer une nouvelle assignation libre
+    await axios.post('/api/assignations', {
+      mission_id: missionId,
+      statut: 'libre'
+    })
+    
+    // Rafraîchir la liste des assignations
+    await viewAssignations(missionId)
+    
+    // Recharger les missions
+    const response = await axios.get('/api/missions')
+    allMissions = response.data
+    renderCompagnieCards()
+    
+    alert('✅ Place supplémentaire ajoutée avec succès')
+  } catch (error) {
+    alert('❌ Erreur : ' + error.message)
   }
 }
 

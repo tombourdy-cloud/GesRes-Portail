@@ -527,6 +527,30 @@ app.get('/api/assignations/mission/:missionId', async (c) => {
   return c.json(assignations.results || [])
 })
 
+// POST /api/assignations - Créer une nouvelle assignation (place supplémentaire)
+app.post('/api/assignations', async (c) => {
+  const { DB } = c.env
+  const { mission_id, statut } = await c.req.json()
+  
+  // Créer une nouvelle assignation libre
+  const result = await DB.prepare(`
+    INSERT INTO assignations (mission_id, statut, gendarme_id)
+    VALUES (?, ?, NULL)
+  `).bind(mission_id, statut || 'libre').run()
+  
+  // Mettre à jour le nombre d'effectifs requis de la mission
+  await DB.prepare(`
+    UPDATE missions 
+    SET effectifs_requis = effectifs_requis + 1 
+    WHERE id = ?
+  `).bind(mission_id).run()
+  
+  return c.json({ 
+    id: result.meta.last_row_id, 
+    message: 'Assignation créée avec succès' 
+  }, 201)
+})
+
 // PUT /api/assignations/:id - Mettre à jour une assignation
 app.put('/api/assignations/:id', async (c) => {
   const { DB } = c.env
