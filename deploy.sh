@@ -40,7 +40,7 @@ echo ""
 
 # 5. Déployer sur Cloudflare Pages
 echo -e "${BLUE}🚀 Étape 2/3 : Déploiement sur Cloudflare Pages...${NC}"
-npx wrangler pages deploy dist --project-name webapp
+npx wrangler pages deploy dist --project-name gesres-missions
 echo -e "${GREEN}✅ Déploiement terminé${NC}"
 echo ""
 
@@ -51,10 +51,10 @@ echo ""
 echo -e "${GREEN}✅ Votre site est en ligne !${NC}"
 echo ""
 echo "📍 URLs disponibles:"
-echo "   Production: https://webapp.pages.dev"
-echo "   Branche:    https://main.webapp.pages.dev"
-echo "   Admin:      https://webapp.pages.dev/admin"
-echo "   API:        https://webapp.pages.dev/api/*"
+echo "   Production: https://gesres-missions.pages.dev"
+echo "   Branche:    https://main.gesres-missions.pages.dev"
+echo "   Admin:      https://gesres-missions.pages.dev/admin"
+echo "   API:        https://gesres-missions.pages.dev/api/*"
 echo ""
 echo "🔐 Identifiants admin par défaut:"
 echo "   Username: admin"
