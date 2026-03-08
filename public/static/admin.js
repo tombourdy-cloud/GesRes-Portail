@@ -4,6 +4,7 @@ dayjs.locale('fr')
 
 let allMissions = [], allGendarmes = [], allBrigades = [], allCompagnies = []
 let currentTab = 'missions', filteredMissions = [], editingMissionId = null
+let editingCompagnieId = null, editingBrigadeId = null, editingGendarmeId = null
 let selectedCompagnieId = null, selectedBrigadeId = null, filteredGendarmes = []
 
 // AUTH
@@ -538,11 +539,13 @@ async function deleteMission(missionId) {
 
 // MODALS - COMPAGNIES
 function showNewCompagnieModal() {
+  editingCompagnieId = null
   document.getElementById('form-compagnie').reset()
   document.getElementById('modal-compagnie').classList.remove('hidden')
 }
 
 function editCompagnie(compagnieId) {
+  editingCompagnieId = compagnieId
   const compagnie = allCompagnies.find(c => c.id === compagnieId)
   if (!compagnie) return
   
@@ -569,6 +572,7 @@ async function deleteCompagnie(compagnieId) {
 
 // MODALS - BRIGADES
 function showNewBrigadeModal() {
+  editingBrigadeId = null
   document.getElementById('form-brigade').reset()
   const compagnieSelect = document.getElementById('brigade-compagnie-id')
   compagnieSelect.innerHTML = '<option value="">-- Sélectionnez une compagnie --</option>' +
@@ -577,6 +581,7 @@ function showNewBrigadeModal() {
 }
 
 function editBrigade(brigadeId) {
+  editingBrigadeId = brigadeId
   const brigade = allBrigades.find(b => b.id === brigadeId)
   if (!brigade) return
   
@@ -607,11 +612,13 @@ async function deleteBrigade(brigadeId) {
 
 // MODALS - GENDARMES
 function showNewGendarmeModal() {
+  editingGendarmeId = null
   document.getElementById('form-gendarme').reset()
   document.getElementById('modal-gendarme').classList.remove('hidden')
 }
 
 function editGendarme(gendarmeId) {
+  editingGendarmeId = gendarmeId
   const gendarme = allGendarmes.find(g => g.id === gendarmeId)
   if (!gendarme) return
   
@@ -890,11 +897,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('📦 Données à envoyer:', data)
     
     try {
-      console.log('🚀 Envoi de la requête POST...')
-      const response = await axios.post('/api/compagnies', data)
-      console.log('✅ Réponse reçue:', response.data)
+      if (editingCompagnieId) {
+        console.log('✏️ Modification compagnie ID:', editingCompagnieId)
+        await axios.put(`/api/compagnies/${editingCompagnieId}`, data)
+        alert('Compagnie modifiée avec succès !')
+      } else {
+        console.log('🚀 Création nouvelle compagnie...')
+        const response = await axios.post('/api/compagnies', data)
+        console.log('✅ Réponse reçue:', response.data)
+        alert('Compagnie créée avec succès !')
+      }
       
       document.getElementById('modal-compagnie').classList.add('hidden')
+      editingCompagnieId = null
       
       console.log('🔄 Rechargement des données...')
       // Recharger compagnies et brigades
@@ -907,7 +922,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       console.log('📊 Données rechargées:', allCompagnies.length, 'compagnies')
       
       renderAdminLieux()
-      alert('Compagnie créée avec succès !')
     } catch (error) {
       console.error('❌ Erreur lors de la création:', error)
       alert('Erreur: ' + (error.response?.data?.error || error.message))
@@ -917,6 +931,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   // FORM - BRIGADE
   document.getElementById('form-brigade').addEventListener('submit', async function(e) {
     e.preventDefault()
+    console.log('📝 Formulaire brigade soumis')
+    
     const data = {
       compagnie_id: parseInt(document.getElementById('brigade-compagnie-id').value),
       nom: document.getElementById('brigade-nom').value,
@@ -926,16 +942,34 @@ document.addEventListener('DOMContentLoaded', async function() {
       email: document.getElementById('brigade-email').value || null
     }
     
+    console.log('📦 Données:', data)
+    console.log('🔑 Mode:', editingBrigadeId ? `Modification (ID: ${editingBrigadeId})` : 'Création')
+    
     try {
-      await axios.post('/api/brigades', data)
+      if (editingBrigadeId) {
+        // Mode modification
+        console.log('🔄 Envoi PUT /api/brigades/' + editingBrigadeId)
+        const response = await axios.put(`/api/brigades/${editingBrigadeId}`, data)
+        console.log('✅ Réponse:', response.data)
+        alert('Brigade modifiée avec succès !')
+        editingBrigadeId = null
+      } else {
+        // Mode création
+        console.log('🚀 Envoi POST /api/brigades')
+        const response = await axios.post('/api/brigades', data)
+        console.log('✅ Réponse:', response.data)
+        alert('Brigade créée avec succès !')
+      }
+      
       document.getElementById('modal-brigade').classList.add('hidden')
       // Recharger seulement les brigades
-      const response = await axios.get('/api/brigades')
-      allBrigades = response.data
+      const listResponse = await axios.get('/api/brigades')
+      allBrigades = listResponse.data
       renderAdminLieux()
-      alert('Brigade créée')
     } catch (error) {
-      alert('Erreur: ' + error.message)
+      console.error('❌ Erreur:', error)
+      console.error('❌ Détails:', error.response?.data)
+      alert('Erreur: ' + (error.response?.data?.error || error.message))
     }
   })
   
@@ -955,11 +989,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     console.log('📦 Données gendarme:', data)
+    console.log('🔑 Mode:', editingGendarmeId ? `Modification (ID: ${editingGendarmeId})` : 'Création')
     
     try {
-      console.log('🚀 Envoi POST /api/gendarmes...')
-      const response = await axios.post('/api/gendarmes', data)
-      console.log('✅ Réponse:', response.data)
+      if (editingGendarmeId) {
+        // Mode modification
+        console.log('🔄 Envoi PUT /api/gendarmes/' + editingGendarmeId)
+        const response = await axios.put(`/api/gendarmes/${editingGendarmeId}`, data)
+        console.log('✅ Réponse:', response.data)
+        alert('Gendarme modifié avec succès !')
+        editingGendarmeId = null
+      } else {
+        // Mode création
+        console.log('🚀 Envoi POST /api/gendarmes')
+        const response = await axios.post('/api/gendarmes', data)
+        console.log('✅ Réponse:', response.data)
+        alert('Gendarme ajouté avec succès !')
+      }
       
       document.getElementById('modal-gendarme').classList.add('hidden')
       // Recharger seulement les gendarmes
@@ -967,9 +1013,8 @@ document.addEventListener('DOMContentLoaded', async function() {
       allGendarmes = listResponse.data
       filteredGendarmes = allGendarmes
       renderAdminGendarmes(filteredGendarmes)
-      alert('Gendarme ajouté avec succès !')
     } catch (error) {
-      console.error('❌ Erreur création gendarme:', error)
+      console.error('❌ Erreur:', error)
       console.error('❌ Détails:', error.response?.data)
       alert('Erreur: ' + (error.response?.data?.error || error.message))
     }
