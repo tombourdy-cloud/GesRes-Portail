@@ -625,7 +625,7 @@ function renderAdminLieux() {
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">Compagnies</h3>
           <button onclick="showNewCompagnieModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            <i class="fas fa-plus mr-2"></i>Nouvelle
+            <i class="fas fa-plus mr-2"></i>Ajouter
           </button>
         </div>
         <div class="space-y-3">
@@ -665,7 +665,7 @@ function renderAdminLieux() {
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">Brigades</h3>
           <button onclick="showNewBrigadeModal()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            <i class="fas fa-plus mr-2"></i>Nouvelle
+            <i class="fas fa-plus mr-2"></i>Ajouter
           </button>
         </div>
         <div class="space-y-3">
