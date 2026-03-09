@@ -5,7 +5,7 @@ dayjs.locale('fr')
 let allMissions = [], allGendarmes = [], allBrigades = [], allCompagnies = []
 let currentTab = 'missions', filteredMissions = [], editingMissionId = null
 let editingCompagnieId = null, editingBrigadeId = null, editingGendarmeId = null
-let selectedCompagnieId = null, selectedBrigadeId = null, filteredGendarmes = []
+let selectedCompagnieId = null, selectedBrigadeId = null, selectedMonth = null, filteredGendarmes = []
 
 // AUTH
 async function checkAuth() {
@@ -148,12 +148,15 @@ function renderCompagnieCards() {
           <span class="text-sm font-medium text-gray-700">${allCompagnies.find(c => c.id === selectedCompagnieId)?.nom}</span>` : ''}
         ${selectedBrigadeId ? `<i class="fas fa-chevron-right text-gray-400 text-xs"></i>
           <span class="text-sm font-medium text-gray-700">${allBrigades.find(b => b.id === selectedBrigadeId)?.nom}</span>` : ''}
+        ${selectedMonth ? `<i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+          <span class="text-sm font-medium text-gray-700">${dayjs(selectedMonth).format('MMMM YYYY')}</span>` : ''}
       </div>
     </div>
     
     ${!selectedCompagnieId ? renderCompagnieSelection(missionsByCompagnie) : ''}
     ${selectedCompagnieId && !selectedBrigadeId ? renderBrigadeSelection() : ''}
-    ${selectedBrigadeId ? renderMissionsByBrigade() : ''}
+    ${selectedBrigadeId && !selectedMonth ? renderMonthSelection() : ''}
+    ${selectedBrigadeId && selectedMonth ? renderMissionsByMonth() : ''}
   `
 }
 
@@ -230,6 +233,165 @@ function renderBrigadeSelection() {
           </div>
         </div>
       `).join('')}
+    </div>
+  `
+}
+
+function renderMonthSelection() {
+  const brigade = allBrigades.find(b => b.id === selectedBrigadeId)
+  const missions = allMissions.filter(m => m.brigade_id === selectedBrigadeId)
+  
+  // Grouper les missions par mois
+  const missionsByMonth = {}
+  missions.forEach(m => {
+    const monthKey = dayjs(m.date_debut).format('YYYY-MM')
+    if (!missionsByMonth[monthKey]) {
+      missionsByMonth[monthKey] = {
+        monthKey: monthKey,
+        displayName: dayjs(m.date_debut).format('MMMM YYYY'),
+        missions: []
+      }
+    }
+    missionsByMonth[monthKey].missions.push(m)
+  })
+  
+  // Trier les mois par ordre chronologique
+  const sortedMonths = Object.values(missionsByMonth).sort((a, b) => 
+    a.monthKey.localeCompare(b.monthKey)
+  )
+  
+  if (sortedMonths.length === 0) {
+    return `
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <i class="fas fa-info-circle text-yellow-600 text-2xl mb-2"></i>
+        <p class="text-gray-700">Aucune mission planifiée pour la brigade <strong>${brigade.nom}</strong></p>
+      </div>
+    `
+  }
+  
+  return `
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fas fa-calendar-alt mr-2"></i>Sélectionnez un mois - Brigade ${brigade.nom}
+      </h3>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      ${sortedMonths.map(month => `
+        <div onclick="selectMonth('${month.monthKey}')" 
+             class="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-purple-500 hover:shadow-lg cursor-pointer transition-all duration-200 card-hover">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <div class="text-sm text-gray-500 uppercase">
+                <i class="fas fa-calendar mr-1"></i>${dayjs(month.monthKey).format('MMMM')}
+              </div>
+              <h4 class="font-bold text-gray-900 text-2xl mt-1">${dayjs(month.monthKey).format('YYYY')}</h4>
+            </div>
+            <div class="text-right">
+              <div class="text-3xl font-bold text-purple-600">${month.missions.length}</div>
+              <div class="text-xs text-gray-500">mission${month.missions.length > 1 ? 's' : ''}</div>
+            </div>
+          </div>
+          <div class="mt-3 pt-3 border-t border-gray-100">
+            <div class="text-sm text-gray-600 space-y-1">
+              <div><i class="fas fa-clock text-purple-400 w-4 mr-1"></i> 
+                ${month.missions.filter(m => m.priorite === 'haute').length} haute priorité
+              </div>
+              <div><i class="fas fa-users text-purple-400 w-4 mr-1"></i> 
+                ${month.missions.reduce((sum, m) => sum + m.effectifs_requis, 0)} effectifs requis
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `
+}
+
+function renderMissionsByMonth() {
+  const brigade = allBrigades.find(b => b.id === selectedBrigadeId)
+  const missions = allMissions.filter(m => {
+    const missionMonth = dayjs(m.date_debut).format('YYYY-MM')
+    return m.brigade_id === selectedBrigadeId && missionMonth === selectedMonth
+  })
+  
+  // Trier les missions par date de début
+  missions.sort((a, b) => new Date(a.date_debut) - new Date(b.date_debut))
+  
+  if (missions.length === 0) {
+    return `
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <i class="fas fa-info-circle text-yellow-600 text-2xl mb-2"></i>
+        <p class="text-gray-700">Aucune mission en <strong>${dayjs(selectedMonth).format('MMMM YYYY')}</strong> pour la brigade <strong>${brigade.nom}</strong></p>
+      </div>
+    `
+  }
+  
+  return `
+    <div class="mb-4 flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-gray-800">
+        <i class="fas fa-tasks mr-2"></i>Missions de ${brigade.nom} - ${dayjs(selectedMonth).format('MMMM YYYY')} (${missions.length})
+      </h3>
+      <button onclick="exportMonthMissionsPDF(${selectedBrigadeId}, '${selectedMonth}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        <i class="fas fa-file-pdf mr-2"></i>Exporter le mois
+      </button>
+    </div>
+    <div class="bg-white rounded-lg shadow overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">N°</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mission</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Effectifs</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priorité</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          ${missions.map(m => {
+            const prioriteClass = m.priorite === 'haute' ? 'bg-red-100 text-red-800' : 
+                                  m.priorite === 'moyenne' ? 'bg-yellow-100 text-yellow-800' : 
+                                  'bg-green-100 text-green-800'
+            const prioriteLabel = m.priorite === 'haute' ? 'Haute' : 
+                                  m.priorite === 'moyenne' ? 'Moyenne' : 'Normale'
+            return `
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 font-mono text-xs">${m.numero_mission}</td>
+                <td class="px-4 py-3">
+                  <div class="font-medium text-gray-900">${m.titre}</div>
+                  ${m.description ? `<div class="text-sm text-gray-500 mt-1">${m.description.substring(0, 50)}${m.description.length > 50 ? '...' : ''}</div>` : ''}
+                </td>
+                <td class="px-4 py-3 text-sm">
+                  <div>${dayjs(m.date_debut).format('DD/MM/YYYY')}</div>
+                  ${m.date_fin ? `<div class="text-xs text-gray-500">au ${dayjs(m.date_fin).format('DD/MM/YYYY')}</div>` : ''}
+                </td>
+                <td class="px-4 py-3 text-sm font-medium">
+                  <span class="${m.effectifs_assignes >= m.effectifs_requis ? 'text-green-600' : 'text-orange-600'}">
+                    ${m.effectifs_assignes}/${m.effectifs_requis}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-1 text-xs rounded-full ${prioriteClass}">${prioriteLabel}</span>
+                </td>
+                <td class="px-4 py-3 text-sm space-x-2">
+                  <button onclick="viewAssignations(${m.id})" class="text-blue-600 hover:text-blue-800" title="Voir les assignations">
+                    <i class="fas fa-users"></i>
+                  </button>
+                  <button onclick="exportMissionPDF(${m.id})" class="text-green-600 hover:text-green-800" title="Exporter en PDF">
+                    <i class="fas fa-file-pdf"></i>
+                  </button>
+                  <button onclick="editMission(${m.id})" class="text-indigo-600 hover:text-indigo-800" title="Éditer">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button onclick="deleteMission(${m.id})" class="text-red-600 hover:text-red-800" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            `
+          }).join('')}
+        </tbody>
+      </table>
     </div>
   `
 }
@@ -317,17 +479,25 @@ function renderMissionsByBrigade() {
 function selectCompagnie(compagnieId) {
   selectedCompagnieId = compagnieId
   selectedBrigadeId = null
+  selectedMonth = null
   renderCompagnieCards()
 }
 
 function selectBrigade(brigadeId) {
   selectedBrigadeId = brigadeId
+  selectedMonth = null
+  renderCompagnieCards()
+}
+
+function selectMonth(monthKey) {
+  selectedMonth = monthKey
   renderCompagnieCards()
 }
 
 function resetMissionView() {
   selectedCompagnieId = null
   selectedBrigadeId = null
+  selectedMonth = null
   renderCompagnieCards()
 }
 
@@ -1851,6 +2021,103 @@ async function exportBrigadeMissionsPDF(brigadeId) {
     }
     
     doc.save(`Missions_${brigade.code}_${dayjs().format('YYYY-MM-DD')}.pdf`)
+    
+  } catch (error) {
+    console.error('Erreur export PDF:', error)
+    alert('❌ Erreur lors de l\'export PDF : ' + error.message)
+  }
+}
+
+async function exportMonthMissionsPDF(brigadeId, monthKey) {
+  try {
+    const brigade = allBrigades.find(b => b.id === brigadeId)
+    if (!brigade) {
+      alert('Brigade non trouvée')
+      return
+    }
+    
+    const missions = allMissions.filter(m => {
+      const missionMonth = dayjs(m.date_debut).format('YYYY-MM')
+      return m.brigade_id === brigadeId && missionMonth === monthKey
+    })
+    
+    // Trier les missions par date
+    missions.sort((a, b) => new Date(a.date_debut) - new Date(b.date_debut))
+    
+    if (missions.length === 0) {
+      alert('Aucune mission pour ce mois')
+      return
+    }
+    
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF()
+    
+    // En-tête
+    doc.setFontSize(18)
+    doc.setTextColor(37, 99, 235)
+    doc.text('MISSIONS DU MOIS', 105, 20, { align: 'center' })
+    
+    doc.setFontSize(14)
+    doc.setTextColor(0, 0, 0)
+    doc.text(brigade.nom, 105, 28, { align: 'center' })
+    
+    doc.setFontSize(12)
+    doc.setTextColor(128, 0, 128)
+    doc.text(dayjs(monthKey).format('MMMM YYYY'), 105, 35, { align: 'center' })
+    
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    doc.text(`${brigade.compagnie_nom || ''}`, 105, 42, { align: 'center' })
+    
+    // Ligne de séparation
+    doc.setDrawColor(200, 200, 200)
+    doc.line(20, 46, 190, 46)
+    
+    // Tableau des missions
+    const tableData = missions.map(m => [
+      m.numero_mission,
+      m.titre,
+      dayjs(m.date_debut).format('DD/MM/YYYY'),
+      `${m.effectifs_assignes}/${m.effectifs_requis}`,
+      m.priorite === 'haute' ? 'Haute' : m.priorite === 'moyenne' ? 'Moyenne' : 'Normale'
+    ])
+    
+    doc.autoTable({
+      head: [['N°', 'Mission', 'Date', 'Effectifs', 'Priorité']],
+      body: tableData,
+      startY: 52,
+      theme: 'grid',
+      styles: {
+        fontSize: 9,
+        cellPadding: 3
+      },
+      headStyles: {
+        fillColor: [128, 0, 128],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 60 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 30 }
+      },
+      didDrawPage: function (data) {
+        // Pied de page
+        doc.setFontSize(8)
+        doc.setTextColor(150, 150, 150)
+        doc.text(
+          `Généré le ${dayjs().format('DD/MM/YYYY à HH:mm')}`,
+          105,
+          290,
+          { align: 'center' }
+        )
+        doc.text('GesRes - Gestion des Missions Réserve', 105, 285, { align: 'center' })
+      }
+    })
+    
+    doc.save(`Missions_${brigade.code}_${dayjs(monthKey).format('YYYY-MM')}.pdf`)
     
   } catch (error) {
     console.error('Erreur export PDF:', error)
