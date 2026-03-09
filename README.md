@@ -4,6 +4,12 @@
 
 **GesRes** (Gestion des Missions Réserve) est une application web complète de gestion des missions pour les réservistes de la gendarmerie nationale. Elle permet aux gendarmes de consulter les missions disponibles et aux administrateurs de gérer l'ensemble du système (missions, affectations, brigades, compagnies, gendarmes).
 
+### 📱 **NOUVEAU : Version Mobile/Tablette v5.0**
+L'application est maintenant **100% responsive** et optimisée pour tous les appareils :
+- **Mobile** : Interface tactile avec menu hamburger
+- **Tablette** : Navigation adaptée avec layouts en 2 colonnes
+- **Desktop** : Interface complète avec toutes les fonctionnalités
+
 ---
 
 ## 🌐 URLs d'accès
@@ -25,6 +31,34 @@
 ---
 
 ## ✅ Fonctionnalités implémentées
+
+### 📱 Responsive Design Mobile/Tablette (v5.0)
+
+#### Optimisations Mobile (< 640px)
+- **Menu hamburger** : Navigation latérale avec overlay et backdrop
+- **Zones tactiles** : Minimum 44px pour tous les boutons et liens
+- **Grilles adaptatives** : Passage en colonne unique sur mobile
+- **Modales plein écran** : Pour une meilleure lisibilité
+- **Navigation sticky** : Barre de navigation fixée en haut
+- **Fil d'ariane responsive** : Textes réduits et wrap automatique
+- **Inputs optimisés** : Font-size 16px (évite le zoom iOS)
+- **Scroll fluide** : Smooth scroll sur toute l'application
+
+#### Optimisations Tablette (640px - 1024px)
+- **Grilles 2 colonnes** : Utilisation optimale de l'espace
+- **Navigation classique** : Boutons dans la barre de navigation
+- **Modales adaptées** : 90% de la largeur d'écran
+- **Espacements ajustés** : Padding optimisé pour tablette
+
+#### Fonctionnalités Cross-Device
+- **Menu mobile synchronisé** : Logo et informations utilisateur
+- **Onglets scrollables** : Navigation horizontale sur mobile
+- **Textes raccourcis** : Labels adaptés pour petits écrans
+- **Boutons empilés** : Organisation verticale sur mobile
+- **Breakpoints CSS** :
+  - `< 640px` : Mobile
+  - `641px - 1024px` : Tablette
+  - `> 1024px` : Desktop
 
 ### Interface publique (Gendarmes)
 
