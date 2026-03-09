@@ -264,7 +264,7 @@ function renderMonths() {
   if (sortedMonths.length === 0) {
     container.innerHTML = `
       <div class="max-w-4xl mx-auto">
-        <button onclick="resetToBrigades()" class="mb-6 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors">
+        <button onclick="resetToBrigades()" class="mb-6 px-6 py-3 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors shadow-md">
           <i class="fas fa-arrow-left mr-2"></i>Retour aux brigades
         </button>
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
@@ -279,16 +279,18 @@ function renderMonths() {
   container.innerHTML = `
     <div class="max-w-6xl mx-auto">
       <div class="mb-6">
-        <button onclick="resetToBrigades()" class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors">
+        <button onclick="resetToBrigades()" class="px-6 py-3 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors shadow-md">
           <i class="fas fa-arrow-left mr-2"></i>Retour aux brigades
         </button>
       </div>
       
-      <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-white mb-3">
-          <i class="fas fa-calendar-alt mr-3"></i>Sélectionnez un mois
-        </h2>
-        <p class="text-blue-100">Brigade ${brigade.nom} - ${sortedMonths.length} mois disponible${sortedMonths.length > 1 ? 's' : ''}</p>
+      <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+        <div class="text-center">
+          <h2 class="text-3xl font-bold text-gray-800 mb-3">
+            <i class="fas fa-calendar-alt mr-3 text-purple-600"></i>Sélectionnez un mois
+          </h2>
+          <p class="text-gray-600">Brigade ${brigade.nom} - ${sortedMonths.length} mois disponible${sortedMonths.length > 1 ? 's' : ''}</p>
+        </div>
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
