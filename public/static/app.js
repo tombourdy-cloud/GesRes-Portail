@@ -8,12 +8,53 @@ let currentFilters = {
   search: ''
 }
 
+// ==================== MENU MOBILE ====================
+function toggleMobileMenu() {
+  const hamburger = document.getElementById('hamburger-menu')
+  const overlay = document.getElementById('mobile-nav-overlay')
+  const backdrop = document.getElementById('mobile-nav-backdrop')
+  
+  hamburger.classList.toggle('active')
+  overlay.classList.toggle('active')
+  backdrop.classList.toggle('active')
+  
+  // Empêcher le scroll du body quand le menu est ouvert
+  document.body.style.overflow = overlay.classList.contains('active') ? 'hidden' : 'auto'
+}
+
+function closeMobileMenu() {
+  const hamburger = document.getElementById('hamburger-menu')
+  const overlay = document.getElementById('mobile-nav-overlay')
+  const backdrop = document.getElementById('mobile-nav-backdrop')
+  
+  hamburger.classList.remove('active')
+  overlay.classList.remove('active')
+  backdrop.classList.remove('active')
+  document.body.style.overflow = 'auto'
+}
+
+function navigateFromMobile(action) {
+  closeMobileMenu()
+  
+  if (action === 'home') {
+    resetSelection()
+  } else if (action === 'admin') {
+    window.location.href = '/admin'
+  }
+}
+
 // ==================== LOAD DATA ====================
 async function loadLogo() {
   try {
     const response = await axios.get('/api/config/logo_url')
     if (response.data.value) {
       document.getElementById('nav-logo').src = response.data.value
+      
+      // Mettre à jour également le logo du menu mobile
+      const mobileLogo = document.getElementById('mobile-logo')
+      if (mobileLogo) {
+        mobileLogo.src = response.data.value
+      }
     }
   } catch (error) {
     console.error('Erreur chargement logo:', error)

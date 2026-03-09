@@ -7,12 +7,54 @@ let currentTab = 'missions', filteredMissions = [], editingMissionId = null
 let editingCompagnieId = null, editingBrigadeId = null, editingGendarmeId = null
 let selectedCompagnieId = null, selectedBrigadeId = null, selectedMonth = null, filteredGendarmes = []
 
+// ==================== MENU MOBILE ADMIN ====================
+function toggleMobileMenuAdmin() {
+  const hamburger = document.getElementById('hamburger-menu-admin')
+  const overlay = document.getElementById('mobile-nav-overlay-admin')
+  const backdrop = document.getElementById('mobile-nav-backdrop-admin')
+  
+  hamburger.classList.toggle('active')
+  overlay.classList.toggle('active')
+  backdrop.classList.toggle('active')
+  
+  document.body.style.overflow = overlay.classList.contains('active') ? 'hidden' : 'auto'
+}
+
+function closeMobileMenuAdmin() {
+  const hamburger = document.getElementById('hamburger-menu-admin')
+  const overlay = document.getElementById('mobile-nav-overlay-admin')
+  const backdrop = document.getElementById('mobile-nav-backdrop-admin')
+  
+  hamburger.classList.remove('active')
+  overlay.classList.remove('active')
+  backdrop.classList.remove('active')
+  document.body.style.overflow = 'auto'
+}
+
+function navigateFromMobileAdmin(action) {
+  closeMobileMenuAdmin()
+  
+  if (action === 'missions') {
+    window.location.href = '/'
+  } else if (action === 'admin') {
+    // Reste sur la page admin
+  }
+}
+
 // AUTH
 async function checkAuth() {
   try {
     const response = await axios.get('/api/auth/me')
     if (response.data.authenticated) {
-      document.getElementById('user-info').textContent = `Connecté: ${response.data.user.username}`
+      const username = response.data.user.username
+      document.getElementById('user-info').textContent = `Connecté: ${username}`
+      
+      // Mettre à jour également le menu mobile
+      const mobileUserInfo = document.getElementById('mobile-user-info')
+      if (mobileUserInfo) {
+        mobileUserInfo.textContent = `Connecté: ${username}`
+      }
+      
       return true
     }
   } catch (error) {
@@ -36,6 +78,13 @@ async function loadLogo() {
     const response = await axios.get('/api/config/logo_url')
     if (response.data.value) {
       document.getElementById('nav-logo').src = response.data.value
+      
+      // Mettre à jour le logo du menu mobile admin
+      const mobileLogoAdmin = document.getElementById('mobile-logo-admin')
+      if (mobileLogoAdmin) {
+        mobileLogoAdmin.src = response.data.value
+      }
+      
       // Mettre à jour aussi l'aperçu dans les paramètres si la page est chargée
       const previewElement = document.getElementById('current-logo-preview')
       if (previewElement) {

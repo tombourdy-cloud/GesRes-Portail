@@ -85,17 +85,55 @@ app.get('/', (c) => {
         <link href="/static/style.css" rel="stylesheet">
     </head>
     <body class="bg-gray-50">
+        <!-- Menu hamburger mobile -->
+        <div id="hamburger-menu" class="hamburger-menu fixed top-4 right-4 z-50" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Backdrop du menu mobile -->
+        <div id="mobile-nav-backdrop" class="mobile-nav-backdrop" onclick="closeMobileMenu()"></div>
+
+        <!-- Menu mobile overlay -->
+        <div id="mobile-nav-overlay" class="mobile-nav-overlay">
+            <div class="flex flex-col space-y-4">
+                <div class="text-center mb-6">
+                    <img id="mobile-logo" src="/static/default-logo.png" alt="Logo" class="h-20 w-20 mx-auto object-contain bg-white rounded-lg p-2 shadow-lg mb-3">
+                    <h2 class="text-xl font-bold text-white">GesRes</h2>
+                    <p class="text-sm text-blue-200">Missions Réserve</p>
+                </div>
+                
+                <button onclick="navigateFromMobile('home')" class="w-full px-6 py-4 bg-white text-blue-900 rounded-lg hover:bg-blue-50 font-medium transition-colors shadow-md text-left">
+                    <i class="fas fa-list mr-3"></i>Missions disponibles
+                </button>
+                
+                <button onclick="navigateFromMobile('admin')" class="w-full px-6 py-4 bg-blue-700 hover:bg-blue-600 text-white rounded-lg transition-colors text-left">
+                    <i class="fas fa-cog mr-3"></i>Administration
+                </button>
+                
+                <div class="mt-8 pt-8 border-t border-blue-700 text-center text-blue-200 text-sm">
+                    <p>Gendarmerie Nationale</p>
+                    <p class="text-xs mt-1">Version Mobile 1.0</p>
+                </div>
+            </div>
+        </div>
+
         <nav class="bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-lg">
             <div class="container mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <img id="nav-logo" src="/static/default-logo.png" alt="Logo" class="h-12 w-12 object-contain bg-white rounded-lg p-1 shadow-md">
-                        <div>
-                            <h1 class="text-xl font-bold">GesRes - Gestion des Missions Réserve</h1>
+                        <img id="nav-logo" src="/static/default-logo.png" alt="Logo" class="h-10 w-10 sm:h-12 sm:w-12 object-contain bg-white rounded-lg p-1 shadow-md">
+                        <div class="hidden sm:block">
+                            <h1 class="text-base sm:text-xl font-bold">GesRes - Gestion des Missions Réserve</h1>
                             <p class="text-xs text-blue-200">Portail des missions disponibles</p>
                         </div>
+                        <div class="block sm:hidden">
+                            <h1 class="text-base font-bold">GesRes</h1>
+                            <p class="text-xs text-blue-200">Missions</p>
+                        </div>
                     </div>
-                    <div class="flex space-x-3">
+                    <div class="desktop-menu hidden sm:flex space-x-3">
                         <a href="/" class="px-4 py-2 bg-white text-blue-900 rounded-lg hover:bg-blue-50 font-medium transition-colors shadow-md">
                             <i class="fas fa-list mr-2"></i>Missions
                         </a>
@@ -109,26 +147,26 @@ app.get('/', (c) => {
 
         <!-- Breadcrumb -->
         <div class="bg-blue-800 text-white shadow-inner">
-            <div class="container mx-auto px-4 py-3">
-                <div id="breadcrumb" class="flex items-center text-sm">
+            <div class="container mx-auto px-4 py-2 sm:py-3">
+                <div id="breadcrumb" class="breadcrumb flex items-center text-xs sm:text-sm flex-wrap gap-2">
                     <i class="fas fa-home text-blue-300"></i>
-                    <span class="text-white font-medium ml-2">Sélection de la compagnie</span>
+                    <span class="text-white font-medium ml-1 sm:ml-2">Sélection de la compagnie</span>
                 </div>
             </div>
         </div>
 
-        <div class="container mx-auto px-4 py-8">
+        <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
             <!-- Contenu principal -->
             <div id="main-content"></div>
         </div>
 
         <!-- Modal informations brigade -->
-        <div id="modal-brigade-info" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+        <div id="modal-brigade-info" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+            <div class="modal-content bg-white rounded-lg p-4 sm:p-6 max-w-2xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold" id="brigade-info-titre">Informations Brigade</h2>
-                    <button onclick="hideBrigadeInfo()" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-2xl"></i>
+                    <h2 class="text-xl sm:text-2xl font-bold" id="brigade-info-titre">Informations Brigade</h2>
+                    <button onclick="hideBrigadeInfo()" class="text-gray-500 hover:text-gray-700 p-2">
+                        <i class="fas fa-times text-xl sm:text-2xl"></i>
                     </button>
                 </div>
                 <div id="brigade-info-content"></div>
@@ -158,14 +196,52 @@ app.get('/admin', (c) => {
         <link href="/static/style.css" rel="stylesheet">
     </head>
     <body class="bg-gray-50">
+        <!-- Menu hamburger mobile (admin) -->
+        <div id="hamburger-menu-admin" class="hamburger-menu fixed top-4 right-4 z-50" onclick="toggleMobileMenuAdmin()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Backdrop du menu mobile -->
+        <div id="mobile-nav-backdrop-admin" class="mobile-nav-backdrop" onclick="closeMobileMenuAdmin()"></div>
+
+        <!-- Menu mobile overlay (admin) -->
+        <div id="mobile-nav-overlay-admin" class="mobile-nav-overlay">
+            <div class="flex flex-col space-y-4">
+                <div class="text-center mb-6">
+                    <img id="mobile-logo-admin" src="/static/default-logo.png" alt="Logo" class="h-20 w-20 mx-auto object-contain bg-white rounded-lg p-2 shadow-lg mb-3">
+                    <h2 class="text-xl font-bold text-white">GesRes Admin</h2>
+                    <p id="mobile-user-info" class="text-sm text-blue-200"></p>
+                </div>
+                
+                <button onclick="navigateFromMobileAdmin('missions')" class="w-full px-6 py-4 bg-white text-blue-900 rounded-lg hover:bg-blue-50 font-medium transition-colors shadow-md text-left">
+                    <i class="fas fa-list mr-3"></i>Missions publiques
+                </button>
+                
+                <button onclick="navigateFromMobileAdmin('admin')" class="w-full px-6 py-4 bg-blue-700 hover:bg-blue-600 text-white rounded-lg transition-colors text-left">
+                    <i class="fas fa-cog mr-3"></i>Administration
+                </button>
+                
+                <button onclick="logout()" class="w-full px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-left">
+                    <i class="fas fa-sign-out-alt mr-3"></i>Déconnexion
+                </button>
+                
+                <div class="mt-8 pt-8 border-t border-blue-700 text-center text-blue-200 text-sm">
+                    <p>Gendarmerie Nationale</p>
+                    <p class="text-xs mt-1">Admin Mobile 1.0</p>
+                </div>
+            </div>
+        </div>
+
         <nav class="bg-blue-900 text-white shadow-lg">
             <div class="container mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <img id="nav-logo" src="/static/default-logo.png" alt="Logo" class="h-10 w-10 object-contain bg-white rounded p-1 cursor-pointer" onclick="showLogoUploadModal()">
-                        <h1 class="text-xl font-bold">GesRes - Administration</h1>
+                        <h1 class="text-base sm:text-xl font-bold">GesRes - Administration</h1>
                     </div>
-                    <div class="flex items-center space-x-4">
+                    <div class="desktop-menu hidden lg:flex items-center space-x-4">
                         <span id="user-info" class="text-sm"></span>
                         <a href="/" class="px-4 py-2 hover:bg-blue-800 rounded">
                             <i class="fas fa-list mr-2"></i>Missions
@@ -181,25 +257,25 @@ app.get('/admin', (c) => {
             </div>
         </nav>
 
-        <div class="container mx-auto px-4 py-8">
+        <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
             <!-- Onglets -->
-            <div class="bg-white rounded-lg shadow mb-6">
-                <div class="flex border-b">
+            <div class="bg-white rounded-lg shadow mb-4 sm:mb-6 overflow-x-auto">
+                <div class="flex border-b min-w-max">
                     <button onclick="switchTab('missions')" id="tab-missions" 
-                            class="tab-btn px-6 py-3 font-medium text-blue-600 border-b-2 border-blue-600">
-                        <i class="fas fa-clipboard-list mr-2"></i>Missions
+                            class="tab-btn px-3 sm:px-6 py-2 sm:py-3 font-medium text-blue-600 border-b-2 border-blue-600 text-sm sm:text-base whitespace-nowrap">
+                        <i class="fas fa-clipboard-list mr-1 sm:mr-2"></i><span class="hidden sm:inline">Missions</span><span class="sm:hidden">Miss.</span>
                     </button>
                     <button onclick="switchTab('lieux')" id="tab-lieux" 
-                            class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
-                        <i class="fas fa-map-marked-alt mr-2"></i>Compagnies & Brigades
+                            class="tab-btn px-3 sm:px-6 py-2 sm:py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent text-sm sm:text-base whitespace-nowrap">
+                        <i class="fas fa-map-marked-alt mr-1 sm:mr-2"></i><span class="hidden sm:inline">Compagnies & Brigades</span><span class="sm:hidden">Lieux</span>
                     </button>
                     <button onclick="switchTab('gendarmes')" id="tab-gendarmes" 
-                            class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
-                        <i class="fas fa-users mr-2"></i>Gendarmes
+                            class="tab-btn px-3 sm:px-6 py-2 sm:py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent text-sm sm:text-base whitespace-nowrap">
+                        <i class="fas fa-users mr-1 sm:mr-2"></i>Gendarmes
                     </button>
                     <button onclick="switchTab('parametres')" id="tab-parametres" 
-                            class="tab-btn px-6 py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent">
-                        <i class="fas fa-cog mr-2"></i>Paramètres
+                            class="tab-btn px-3 sm:px-6 py-2 sm:py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent text-sm sm:text-base whitespace-nowrap">
+                        <i class="fas fa-cog mr-1 sm:mr-2"></i><span class="hidden sm:inline">Paramètres</span><span class="sm:hidden">Param.</span>
                     </button>
                 </div>
             </div>
@@ -212,15 +288,15 @@ app.get('/admin', (c) => {
             
             <!-- Contenu Gendarmes -->
             <div id="content-gendarmes" class="hidden space-y-4">
-                <div class="bg-white rounded-lg shadow-lg p-4 mb-4">
-                    <div class="flex items-center justify-between">
+                <div class="bg-white rounded-lg shadow-lg p-3 sm:p-4 mb-4">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         <div class="flex items-center space-x-3 flex-1">
                             <i class="fas fa-search text-xl text-gray-400"></i>
                             <input type="text" id="search-gendarme" 
-                                   placeholder="Rechercher un gendarme par nom, matricule, grade, spécialité..." 
-                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                   placeholder="Rechercher un gendarme..." 
+                                   class="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
                         </div>
-                        <button onclick="showNewGendarmeModal()" class="ml-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <button onclick="showNewGendarmeModal()" class="px-4 sm:px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 whitespace-nowrap text-sm sm:text-base">
                             <i class="fas fa-plus mr-2"></i>Nouveau gendarme
                         </button>
                     </div>

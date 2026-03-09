@@ -129,9 +129,245 @@ table {
   font-variant-numeric: tabular-nums;
 }
 
-/* Responsive design pour mobile */
-@media (max-width: 768px) {
-  .grid-cols-3 {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+/* Breakpoints :
+   - Mobile : < 640px (sm)
+   - Tablette : 640px - 1024px (md/lg)
+   - Desktop : > 1024px (xl)
+*/
+
+/* Mobile - Optimisations tactiles */
+@media (max-width: 640px) {
+  /* Augmentation de la taille des zones tactiles */
+  button, a, input, select, textarea {
+    min-height: 44px !important;
+    min-width: 44px;
+  }
+  
+  /* Navigation mobile */
+  .mobile-menu {
+    display: block;
+  }
+  
+  .desktop-menu {
+    display: none;
+  }
+  
+  /* Grilles en colonne unique */
+  .grid-cols-2, .grid-cols-3, .grid-cols-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  
+  /* Espacement réduit pour mobile */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Cartes full-width sur mobile */
+  .card-hover {
+    border-radius: 0.5rem;
+  }
+  
+  /* Tables responsives - scroll horizontal */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    min-width: 600px;
+  }
+  
+  /* Modales plein écran sur mobile */
+  .modal-content {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Textes adaptés mobile */
+  h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Navigation sticky sur mobile */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  
+  /* Fil d'ariane responsive */
+  .breadcrumb {
+    font-size: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  /* Boutons stack sur mobile */
+  .button-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .button-group > * {
+    width: 100%;
+  }
+}
+
+/* Tablette - Optimisations intermédiaires */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .mobile-menu {
+    display: none;
+  }
+  
+  .desktop-menu {
+    display: flex;
+  }
+  
+  /* Grilles 2 colonnes sur tablette */
+  .grid-cols-3, .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  
+  /* Espacement tablette */
+  .container {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+  
+  /* Modales adaptées tablette */
+  .modal-content {
+    max-width: 90vw !important;
+    max-height: 90vh !important;
+  }
+}
+
+/* Desktop - Affichage par défaut */
+@media (min-width: 1025px) {
+  .mobile-menu {
+    display: none;
+  }
+  
+  .desktop-menu {
+    display: flex;
+  }
+}
+
+/* Menu hamburger pour mobile */
+.hamburger-menu {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  z-index: 50;
+}
+
+.hamburger-menu span {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 3px 0;
+  transition: 0.3s;
+  border-radius: 3px;
+}
+
+.hamburger-menu.active span:nth-child(1) {
+  transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+  transform: rotate(45deg) translate(-5px, -6px);
+}
+
+@media (max-width: 640px) {
+  .hamburger-menu {
+    display: flex;
+  }
+}
+
+/* Menu mobile overlay */
+.mobile-nav-overlay {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 80%;
+  height: 100vh;
+  background-color: #1e3a8a;
+  z-index: 45;
+  transition: left 0.3s ease-in-out;
+  padding: 5rem 1.5rem 1.5rem;
+  overflow-y: auto;
+}
+
+.mobile-nav-overlay.active {
+  left: 0;
+}
+
+.mobile-nav-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 44;
+  display: none;
+}
+
+.mobile-nav-backdrop.active {
+  display: block;
+}
+
+/* Optimisations tactiles générales */
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  -webkit-touch-callout: none;
+}
+
+button, a {
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Scroll smooth sur toute la page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Amélioration des inputs tactiles */
+input, select, textarea {
+  font-size: 16px !important; /* Évite le zoom automatique sur iOS */
+}
+
+/* Cartes empilées sur mobile */
+@media (max-width: 640px) {
+  .mission-card, .brigade-card, .compagnie-card {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Boutons flottants sur mobile */
+.floating-action-button {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 30;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 640px) {
+  .floating-action-button {
+    bottom: 1rem;
+    right: 1rem;
   }
 }
