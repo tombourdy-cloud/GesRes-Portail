@@ -4,7 +4,15 @@
 
 **GesRes** (Gestion des Missions Réserve) est une application web complète de gestion des missions pour les réservistes de la gendarmerie nationale. Elle permet aux gendarmes de consulter les missions disponibles et aux administrateurs de gérer l'ensemble du système (missions, affectations, brigades, compagnies, gendarmes).
 
-### 📱 **NOUVEAU : Version Mobile/Tablette v5.0**
+### 🗑️ **NOUVEAU : Nettoyage automatique v6.0**
+Les missions expirées sont automatiquement gérées :
+- **Suppression automatique** : Le 1er de chaque mois à 2h du matin
+- **Critère** : Missions terminées avant le mois précédent
+- **Exemple** : Le 1er avril, les missions terminées avant mars sont supprimées
+- **Cascade** : Les assignations liées sont supprimées automatiquement
+- **Manuel** : Bouton de nettoyage dans l'onglet Paramètres (admin)
+
+### 📱 **Version Mobile/Tablette v5.0**
 L'application est maintenant **100% responsive** et optimisée pour tous les appareils :
 - **Mobile** : Interface tactile avec menu hamburger
 - **Tablette** : Navigation adaptée avec layouts en 2 colonnes
