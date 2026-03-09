@@ -74,14 +74,23 @@
 - Protection des routes admin
 - Déconnexion avec nettoyage des cookies
 
-#### 📋 Gestion des Missions (Navigation hiérarchique)
-- **Affichage organisé** en 3 niveaux :
+#### 📋 Gestion des Missions (Navigation hiérarchique avec filtrage par mois)
+- **Affichage organisé** en 4 niveaux :
   1. **Vue Compagnies** : Cartes cliquables affichant le nombre de missions par compagnie
   2. **Vue Brigades** : Après sélection de la compagnie, cartes des brigades avec compteur de missions
-  3. **Vue Missions** : Après sélection de la brigade, tableau détaillé des missions
+  3. **Vue Sélection Mois** : Après sélection de la brigade, cartes mensuelles avec :
+     - Mois et année (format MMMM YYYY)
+     - Nombre de missions du mois
+     - Statistiques : missions haute priorité et effectifs requis
+     - Missions groupées automatiquement par mois de début
+  4. **Vue Missions du Mois** : Après sélection du mois, tableau détaillé des missions :
+     - Missions triées par date de début (ordre chronologique)
+     - Affichage date de début et date de fin
+     - Bouton export PDF pour le mois complet
 - **Navigation** :
-  - Fil d'ariane (breadcrumb) pour voir le chemin : Accueil → Compagnie → Brigade
+  - Fil d'ariane (breadcrumb) : Accueil → Compagnie → Brigade → Mois
   - Bouton "Retour aux compagnies" pour revenir à la vue principale
+  - Clic sur n'importe quel élément du fil d'ariane pour revenir en arrière
 - **Création** avec champs obligatoires :
   - Numéro de mission (unique)
   - Titre
@@ -466,9 +475,49 @@ npm run test           # Test curl de l'API
    - Utiliser le fil d'ariane pour naviguer : Accueil → Compagnie → Brigade
 
 ### Pour les administrateurs
-1. Se connecter via `/login` (admin/admin123)
-2. **Onglet Missions** :
-   - Créer une nouvelle mission (champs obligatoires : numéro, titre, brigade, dates)
+
+#### Consultation des missions par mois (workflow recommandé)
+
+**Objectif** : Visualiser les missions d'une brigade organisées par mois pour faciliter la planification.
+
+**Étapes** :
+1. **Se connecter** via `/login` (admin/admin123)
+2. **Onglet Missions** → Vous êtes sur la vue Compagnies
+3. **Cliquer sur une compagnie** (ex: Compagnie de Gendarmerie de Pontoise)
+   - Vous voyez maintenant toutes les brigades de cette compagnie avec leur nombre de missions
+4. **Cliquer sur une brigade** (ex: BTA AUVERS SUR OISE)
+   - Vous voyez maintenant une **sélection de mois** disponibles
+   - Chaque carte mensuelle affiche :
+     - Le mois et l'année (ex: Mars 2026)
+     - Le nombre total de missions du mois
+     - Statistiques : missions haute priorité, effectifs requis
+5. **Cliquer sur un mois** (ex: Mars 2026)
+   - Vous voyez maintenant **toutes les missions de ce mois** pour cette brigade
+   - Les missions sont **triées chronologiquement** par date de début
+   - Vous pouvez :
+     - Voir les détails de chaque mission
+     - Gérer les assignations (bouton "Voir")
+     - Modifier une mission (bouton éditer)
+     - Exporter le mois complet en PDF
+     - Supprimer une mission
+
+**Navigation rapide** :
+- Utilisez le fil d'ariane en haut : `Accueil → Compagnie → Brigade → Mois`
+- Cliquez sur n'importe quel élément pour revenir en arrière
+- Bouton "Retour aux compagnies" pour retourner à la vue principale
+
+**Avantages** :
+- ✅ Vision mensuelle claire des missions
+- ✅ Planification facilitée par période
+- ✅ Tri chronologique automatique
+- ✅ Export PDF par mois
+- ✅ Statistiques visuelles (priorités, effectifs)
+
+#### Autres fonctionnalités admin
+
+1. **Créer une nouvelle mission** :
+   - Cliquer sur "Nouvelle mission" (bouton bleu en haut)
+   - Remplir les champs obligatoires : numéro, titre, brigade, dates
    - Rechercher une mission via la barre de recherche globale
    - Modifier une mission existante (bouton éditer)
    - Voir/gérer les assignations (bouton "Voir")
