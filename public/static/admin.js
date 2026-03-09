@@ -2171,3 +2171,102 @@ async function exportMonthMissionsPDF(brigadeId, monthKey) {
     alert('❌ Erreur lors de l\'export PDF : ' + error.message)
   }
 }
+
+// ==================== NETTOYAGE AUTOMATIQUE ====================
+
+// Vérifier les missions à supprimer
+async function checkCleanupStatus() {
+  try {
+    const statusDiv = document.getElementById('cleanup-status')
+    statusDiv.innerHTML = '<p class="text-sm text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Vérification en cours...</p>'
+    
+    const response = await axios.get('/api/missions/cleanup-status')
+    const { count, lastMonthEnd, missions } = response.data
+    
+    const lastMonthDate = new Date(lastMonthEnd)
+    const formattedDate = lastMonthDate.toLocaleDateString('fr-FR', { 
+      day: '2-digit', 
+      month: 'long', 
+      year: 'numeric' 
+    })
+    
+    if (count === 0) {
+      statusDiv.innerHTML = `
+        <div class="flex items-center">
+          <i class="fas fa-check-circle text-green-500 text-2xl mr-3"></i>
+          <div>
+            <p class="text-sm font-medium text-gray-800">Aucune mission expirée</p>
+            <p class="text-xs text-gray-500">Toutes les missions sont à jour (terminées après le ${formattedDate})</p>
+          </div>
+        </div>
+      `
+    } else {
+      statusDiv.innerHTML = `
+        <div class="flex items-center mb-3">
+          <i class="fas fa-exclamation-triangle text-orange-500 text-2xl mr-3"></i>
+          <div>
+            <p class="text-sm font-medium text-gray-800">${count} mission(s) expirée(s) à supprimer</p>
+            <p class="text-xs text-gray-500">Missions terminées avant le ${formattedDate}</p>
+          </div>
+        </div>
+        <div class="mt-3 max-h-40 overflow-y-auto">
+          <ul class="text-xs text-gray-600 space-y-1">
+            ${missions.slice(0, 10).map(m => `
+              <li class="flex items-center justify-between py-1 px-2 hover:bg-gray-100 rounded">
+                <span><strong>${m.numero_mission}</strong> - ${m.titre}</span>
+                <span class="text-gray-400">${new Date(m.date_fin).toLocaleDateString('fr-FR')}</span>
+              </li>
+            `).join('')}
+            ${count > 10 ? `<li class="text-gray-400 italic">... et ${count - 10} autres</li>` : ''}
+          </ul>
+        </div>
+      `
+    }
+  } catch (error) {
+    console.error('Erreur vérification cleanup:', error)
+    const statusDiv = document.getElementById('cleanup-status')
+    statusDiv.innerHTML = `
+      <p class="text-sm text-red-600">
+        <i class="fas fa-times-circle mr-2"></i>Erreur lors de la vérification
+      </p>
+    `
+  }
+}
+
+// Supprimer les missions expirées maintenant
+async function cleanupExpiredMissionsNow() {
+  if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer toutes les missions expirées ?\n\nCette action est définitive et ne peut pas être annulée.')) {
+    return
+  }
+  
+  try {
+    const response = await axios.post('/api/missions/cleanup')
+    const { deleted, message, missions } = response.data
+    
+    if (deleted === 0) {
+      alert('✅ Aucune mission à supprimer')
+    } else {
+      alert(`✅ ${message}\n\nMissions supprimées :\n${missions.map(m => `- ${m.numero_mission} : ${m.titre}`).join('\n')}`)
+      
+      // Recharger les données
+      await loadAllData()
+      renderCompagnieCards()
+    }
+    
+    // Mettre à jour le statut
+    await checkCleanupStatus()
+  } catch (error) {
+    console.error('Erreur nettoyage:', error)
+    alert('❌ Erreur lors du nettoyage des missions expirées')
+  }
+}
+
+// Charger le statut au chargement de l'onglet paramètres
+const originalSwitchTab = switchTab
+switchTab = function(tabName) {
+  originalSwitchTab(tabName)
+  
+  if (tabName === 'parametres') {
+    checkCleanupStatus()
+  }
+}

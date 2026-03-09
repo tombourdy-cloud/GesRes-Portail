@@ -364,6 +364,51 @@ app.get('/admin', (c) => {
                         </div>
                     </form>
                 </div>
+                
+                <!-- Section Nettoyage automatique des missions -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">
+                        <i class="fas fa-broom mr-2"></i>Nettoyage automatique des missions
+                    </h3>
+                    
+                    <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+                        <p class="text-sm text-gray-700 mb-2">
+                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                            <strong>Fonctionnement automatique :</strong>
+                        </p>
+                        <ul class="text-sm text-gray-600 ml-6 space-y-1">
+                            <li>• Les missions sont automatiquement supprimées le 1er de chaque mois</li>
+                            <li>• Seules les missions terminées <strong>avant le mois précédent</strong> sont supprimées</li>
+                            <li>• Exemple : le 1er avril, toutes les missions terminées avant mars sont supprimées</li>
+                            <li>• Les assignations liées sont également supprimées automatiquement</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2">Statut des missions expirées</label>
+                        <div id="cleanup-status" class="p-4 bg-gray-50 rounded-lg border">
+                            <p class="text-sm text-gray-500">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>Chargement...
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="checkCleanupStatus()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-sync mr-2"></i>Vérifier les missions à supprimer
+                        </button>
+                        <button onclick="cleanupExpiredMissionsNow()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            <i class="fas fa-trash-alt mr-2"></i>Supprimer maintenant
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+                        <p class="text-xs text-yellow-800">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            <strong>Attention :</strong> La suppression est définitive et ne peut pas être annulée.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
 

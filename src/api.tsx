@@ -337,6 +337,61 @@ app.get('/api/missions', async (c) => {
   return c.json(missionsWithGendarmes)
 })
 
+// GET /api/missions/cleanup-status - Vérifier les missions à supprimer
+app.get("/api/missions/cleanup-status", async (c) => {
+  const { DB } = c.env
+  
+  try {
+    const now = new Date()
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
+    const lastMonthEndISO = lastMonthEnd.toISOString()
+    
+    const expiredMissions = await DB.prepare(`
+      SELECT 
+        id, 
+        numero_mission, 
+        titre, 
+        date_debut,
+        date_fin,
+        brigade_id
+      FROM missions
+      WHERE date_fin < ?
+      ORDER BY date_fin DESC
+    `).bind(lastMonthEndISO).all()
+    
+    return c.json({
+      count: expiredMissions.results.length,
+      lastMonthEnd: lastMonthEndISO,
+      missions: expiredMissions.results
+    })
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500)
+  }
+})
+
+// POST /api/missions/cleanup - Nettoyer manuellement les missions expirées (admin)
+app.post("/api/missions/cleanup", async (c) => {
+  const { DB } = c.env
+  
+  // Vérifier l authentication
+  const token = getCookie(c, "auth_token")
+  if (!token) {
+    return c.json({ error: "Non authentifié" }, 401)
+  }
+  
+  try {
+    const result = await cleanupExpiredMissions(DB)
+    return c.json({
+      success: true,
+      message: `${result.deleted} mission(s) expirée(s) supprimée(s)`,
+      deleted: result.deleted,
+      missions: result.missions
+    })
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500)
+  }
+})
+
 // GET /api/missions/:id - Récupérer une mission avec détails complets
 app.get('/api/missions/:id', async (c) => {
   const { DB } = c.env
@@ -1032,4 +1087,46 @@ app.post('/api/notifications/assignation-validee', async (c) => {
     return c.json({ error: error.message }, 500)
   }
 })
+
+// ==================== NETTOYAGE AUTOMATIQUE ====================
+
+// Fonction helper pour supprimer les missions expirées
+async function cleanupExpiredMissions(DB: D1Database): Promise<{ deleted: number, missions: any[] }> {
+  try {
+    // Calculer la date de fin du mois précédent (dernier jour du mois dernier à 23:59:59)
+    const now = new Date()
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
+    const lastMonthEndISO = lastMonthEnd.toISOString()
+    
+    console.log(`🗑️ Nettoyage automatique : suppression des missions terminées avant le ${lastMonthEndISO}`)
+    
+    // Récupérer d'abord les missions à supprimer (pour logs)
+    const missionsToDelete = await DB.prepare(`
+      SELECT id, numero_mission, titre, date_fin
+      FROM missions
+      WHERE date_fin < ?
+    `).bind(lastMonthEndISO).all()
+    
+    if (missionsToDelete.results.length === 0) {
+      console.log('✅ Aucune mission expirée à supprimer')
+      return { deleted: 0, missions: [] }
+    }
+    
+    // Supprimer les missions (les assignations sont supprimées automatiquement via ON DELETE CASCADE)
+    const result = await DB.prepare(`
+      DELETE FROM missions
+      WHERE date_fin < ?
+    `).bind(lastMonthEndISO).run()
+    
+    console.log(`✅ ${missionsToDelete.results.length} missions expirées supprimées`)
+    
+    return {
+      deleted: missionsToDelete.results.length,
+      missions: missionsToDelete.results
+    }
+  } catch (error: any) {
+    console.error('❌ Erreur lors du nettoyage automatique:', error)
+    throw error
+  }
+}
 
