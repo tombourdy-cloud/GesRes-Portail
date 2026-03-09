@@ -1,7 +1,7 @@
 dayjs.locale('fr')
 
 let allMissions = [], allBrigades = [], allCompagnies = []
-let selectedCompagnieId = null, selectedBrigadeId = null
+let selectedCompagnieId = null, selectedBrigadeId = null, selectedMonth = null
 let currentFilters = {
   priorite: 'all',
   statut: 'all',
@@ -50,6 +50,8 @@ function renderView() {
     renderCompagnies()
   } else if (!selectedBrigadeId) {
     renderBrigades()
+  } else if (!selectedMonth) {
+    renderMonths()
   } else {
     renderMissions()
   }
@@ -220,10 +222,128 @@ function renderBrigades() {
   `
 }
 
-function renderMissions() {
+function renderMonths() {
   const compagnie = allCompagnies.find(c => c.id === selectedCompagnieId)
   const brigade = allBrigades.find(b => b.id === selectedBrigadeId)
   const missionsInBrigade = allMissions.filter(m => m.brigade_id === selectedBrigadeId)
+  
+  // Grouper les missions par mois
+  const missionsByMonth = {}
+  missionsInBrigade.forEach(m => {
+    const monthKey = dayjs(m.date_debut).format('YYYY-MM')
+    if (!missionsByMonth[monthKey]) {
+      missionsByMonth[monthKey] = {
+        monthKey: monthKey,
+        displayName: dayjs(m.date_debut).format('MMMM YYYY'),
+        missions: []
+      }
+    }
+    missionsByMonth[monthKey].missions.push(m)
+  })
+  
+  // Trier les mois par ordre chronologique
+  const sortedMonths = Object.values(missionsByMonth).sort((a, b) => 
+    a.monthKey.localeCompare(b.monthKey)
+  )
+  
+  // Update breadcrumb
+  document.getElementById('breadcrumb').innerHTML = `
+    <span onclick="resetToCompagnies()" class="text-blue-300 hover:text-white cursor-pointer">
+      <i class="fas fa-home"></i> Compagnies
+    </span>
+    <i class="fas fa-chevron-right text-blue-400 text-sm mx-2"></i>
+    <span onclick="resetToBrigades()" class="text-blue-300 hover:text-white cursor-pointer">
+      ${compagnie.nom}
+    </span>
+    <i class="fas fa-chevron-right text-blue-400 text-sm mx-2"></i>
+    <span class="text-white font-medium">${brigade.nom}</span>
+  `
+  
+  const container = document.getElementById('main-content')
+  
+  if (sortedMonths.length === 0) {
+    container.innerHTML = `
+      <div class="max-w-4xl mx-auto">
+        <button onclick="resetToBrigades()" class="mb-6 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors">
+          <i class="fas fa-arrow-left mr-2"></i>Retour aux brigades
+        </button>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <i class="fas fa-info-circle text-yellow-600 text-2xl mb-2"></i>
+          <p class="text-gray-700">Aucune mission planifiée pour la brigade <strong>${brigade.nom}</strong></p>
+        </div>
+      </div>
+    `
+    return
+  }
+  
+  container.innerHTML = `
+    <div class="max-w-6xl mx-auto">
+      <div class="mb-6">
+        <button onclick="resetToBrigades()" class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors">
+          <i class="fas fa-arrow-left mr-2"></i>Retour aux brigades
+        </button>
+      </div>
+      
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-white mb-3">
+          <i class="fas fa-calendar-alt mr-3"></i>Sélectionnez un mois
+        </h2>
+        <p class="text-blue-100">Brigade ${brigade.nom} - ${sortedMonths.length} mois disponible${sortedMonths.length > 1 ? 's' : ''}</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        ${sortedMonths.map(month => `
+          <div onclick="selectMonth('${month.monthKey}')" 
+               class="group bg-gradient-to-br from-white to-purple-50 border-2 border-purple-200 rounded-xl p-8 hover:border-purple-500 hover:shadow-2xl cursor-pointer transition-all duration-300 transform hover:-translate-y-2">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="bg-purple-600 text-white rounded-lg p-3 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-calendar text-2xl"></i>
+                  </div>
+                  <div>
+                    <div class="text-sm text-gray-500 uppercase font-medium">${dayjs(month.monthKey).format('MMMM')}</div>
+                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors">${dayjs(month.monthKey).format('YYYY')}</h3>
+                  </div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-4xl font-bold text-purple-600 group-hover:scale-110 transition-transform">${month.missions.length}</div>
+                <div class="text-xs text-gray-500 uppercase">mission${month.missions.length > 1 ? 's' : ''}</div>
+              </div>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-200 space-y-2">
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <i class="fas fa-clock text-purple-400 w-4"></i>
+                <span>${month.missions.filter(m => m.priorite === 'haute').length} haute priorité</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <i class="fas fa-users text-purple-400 w-4"></i>
+                <span>${month.missions.reduce((sum, m) => sum + m.effectifs_requis, 0)} effectifs requis</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <i class="fas fa-check-circle text-purple-400 w-4"></i>
+                <span>${month.missions.filter(m => m.places_libres > 0).length} avec places disponibles</span>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `
+}
+
+function renderMissions() {
+  const compagnie = allCompagnies.find(c => c.id === selectedCompagnieId)
+  const brigade = allBrigades.find(b => b.id === selectedBrigadeId)
+  const missionsInBrigade = allMissions.filter(m => {
+    const missionMonth = dayjs(m.date_debut).format('YYYY-MM')
+    return m.brigade_id === selectedBrigadeId && missionMonth === selectedMonth
+  })
+  
+  // Trier les missions par date de début
+  missionsInBrigade.sort((a, b) => new Date(a.date_debut) - new Date(b.date_debut))
   
   // Appliquer les filtres
   let filteredMissions = missionsInBrigade.filter(m => {
@@ -250,7 +370,11 @@ function renderMissions() {
       ${compagnie.nom}
     </span>
     <i class="fas fa-chevron-right text-blue-400 text-sm mx-2"></i>
-    <span class="text-white font-medium">${brigade.nom}</span>
+    <span onclick="resetToMonths()" class="text-blue-300 hover:text-white cursor-pointer">
+      ${brigade.nom}
+    </span>
+    <i class="fas fa-chevron-right text-blue-400 text-sm mx-2"></i>
+    <span class="text-white font-medium">${dayjs(selectedMonth).format('MMMM YYYY')}</span>
   `
   
   const container = document.getElementById('main-content')
@@ -260,15 +384,15 @@ function renderMissions() {
       <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <button onclick="resetToBrigades()" class="mb-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-              <i class="fas fa-arrow-left mr-2"></i>Retour aux brigades
+            <button onclick="resetToMonths()" class="mb-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              <i class="fas fa-arrow-left mr-2"></i>Retour aux mois
             </button>
             <h2 class="text-2xl font-bold text-gray-800">
-              <i class="fas fa-tasks mr-2 text-green-600"></i>${brigade.nom}
+              <i class="fas fa-tasks mr-2 text-green-600"></i>${brigade.nom} - ${dayjs(selectedMonth).format('MMMM YYYY')}
             </h2>
             <p class="text-sm text-gray-600 mt-1">
               <span class="font-medium">${compagnie.nom}</span> · 
-              ${missionsInBrigade.length} mission${missionsInBrigade.length > 1 ? 's' : ''} disponible${missionsInBrigade.length > 1 ? 's' : ''}
+              ${missionsInBrigade.length} mission${missionsInBrigade.length > 1 ? 's' : ''} ce mois
             </p>
           </div>
           
@@ -471,12 +595,21 @@ function renderMissionCard(m) {
 function selectCompagnie(compagnieId) {
   selectedCompagnieId = compagnieId
   selectedBrigadeId = null
+  selectedMonth = null
   renderView()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 function selectBrigade(brigadeId) {
   selectedBrigadeId = brigadeId
+  selectedMonth = null
+  resetFilters()
+  renderView()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function selectMonth(monthKey) {
+  selectedMonth = monthKey
   resetFilters()
   renderView()
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -485,6 +618,7 @@ function selectBrigade(brigadeId) {
 function resetToCompagnies() {
   selectedCompagnieId = null
   selectedBrigadeId = null
+  selectedMonth = null
   resetFilters()
   renderView()
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -492,6 +626,14 @@ function resetToCompagnies() {
 
 function resetToBrigades() {
   selectedBrigadeId = null
+  selectedMonth = null
+  resetFilters()
+  renderView()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function resetToMonths() {
+  selectedMonth = null
   resetFilters()
   renderView()
   window.scrollTo({ top: 0, behavior: 'smooth' })
