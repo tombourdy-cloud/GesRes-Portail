@@ -226,8 +226,6 @@ function renderBrigadeSelection() {
             </div>
           </div>
           <div class="text-sm text-gray-600 space-y-1">
-            <div><i class="fas fa-user text-green-400 w-4 mr-1"></i> ${b.chef_brigade}</div>
-            <div><i class="fas fa-users text-green-400 w-4 mr-1"></i> ${b.effectifs} gendarmes</div>
             <div><i class="fas fa-phone text-green-400 w-4 mr-1"></i> ${b.telephone}</div>
             <div><i class="fas fa-map-marker-alt text-green-400 w-4 mr-1"></i> ${b.adresse.substring(0, 40)}${b.adresse.length > 40 ? '...' : ''}</div>
           </div>
