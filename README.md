@@ -12,6 +12,17 @@ Les missions expirées sont automatiquement gérées :
 - **Cascade** : Les assignations liées sont supprimées automatiquement
 - **Manuel** : Bouton de nettoyage dans l'onglet Paramètres (admin)
 
+### 📊 **NOUVEAU : Import Excel v7.0**
+Import massif de missions depuis fichiers Excel :
+- **Formats acceptés** : .xlsx, .xls
+- **Colonnes obligatoires** : N° mission, dates début/fin, description, titre, code brigade
+- **Colonnes optionnelles** : Effectifs requis, priorité, compétences
+- **Validation automatique** : Vérification des brigades et formats de dates
+- **Aperçu avant import** : Affichage des 5 premières lignes
+- **Modèle téléchargeable** : Template Excel fourni
+- **Feedback détaillé** : Succès, échecs et erreurs affichés
+- **Guide complet** : Voir `GUIDE_IMPORT_EXCEL.md`
+
 ### 📱 **Version Mobile/Tablette v5.0**
 L'application est maintenant **100% responsive** et optimisée pour tous les appareils :
 - **Mobile** : Interface tactile avec menu hamburger
