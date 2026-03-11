@@ -488,6 +488,80 @@ app.post('/api/missions', async (c) => {
   }
 })
 
+// POST /api/missions/import-batch - Importer plusieurs missions en une fois
+app.post('/api/missions/import-batch', async (c) => {
+  const { DB } = c.env
+  
+  try {
+    const body = await c.req.json()
+    const { missions } = body
+    
+    if (!missions || !Array.isArray(missions) || missions.length === 0) {
+      return c.json({ error: 'Aucune mission à importer' }, 400)
+    }
+    
+    let success = 0
+    let failed = 0
+    const errors: string[] = []
+    
+    for (const mission of missions) {
+      try {
+        const { numero_mission, titre, description, brigade_id, date_debut, date_fin, effectifs_requis, competences_requises, priorite } = mission
+        
+        // Vérifier les champs obligatoires
+        if (!numero_mission || !titre || !brigade_id || !date_debut) {
+          failed++
+          errors.push(`Mission ${numero_mission || '?'}: champs obligatoires manquants`)
+          continue
+        }
+        
+        // Créer la mission
+        const result = await DB.prepare(`
+          INSERT INTO missions (numero_mission, titre, description, brigade_id, date_debut, date_fin, effectifs_requis, competences_requises, priorite)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          numero_mission,
+          titre,
+          description || null,
+          brigade_id,
+          date_debut,
+          date_fin || null,
+          effectifs_requis || 1,
+          competences_requises || null,
+          priorite || 'normale'
+        ).run()
+        
+        const missionId = result.meta.last_row_id
+        
+        // Créer les assignations libres
+        const effectifs = effectifs_requis || 1
+        for (let i = 0; i < effectifs; i++) {
+          await DB.prepare(`
+            INSERT INTO assignations (mission_id, statut)
+            VALUES (?, 'libre')
+          `).bind(missionId).run()
+        }
+        
+        success++
+      } catch (error: any) {
+        failed++
+        errors.push(`Mission ${mission.numero_mission || '?'}: ${error.message}`)
+      }
+    }
+    
+    return c.json({
+      success,
+      failed,
+      total: missions.length,
+      errors: errors.length > 0 ? errors : undefined,
+      message: `Import terminé: ${success} succès, ${failed} échec(s)`
+    }, 200)
+  } catch (error: any) {
+    console.error('Erreur import batch:', error)
+    return c.json({ error: 'Erreur lors de l\'import: ' + error.message }, 500)
+  }
+})
+
 // PUT /api/missions/:id - Mettre à jour une mission
 app.put('/api/missions/:id', async (c) => {
   const { DB } = c.env

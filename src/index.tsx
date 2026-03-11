@@ -365,6 +365,82 @@ app.get('/admin', (c) => {
                     </form>
                 </div>
                 
+                <!-- Section Import Excel des missions -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">
+                        <i class="fas fa-file-excel mr-2 text-green-600"></i>Import de missions depuis Excel
+                    </h3>
+                    
+                    <div class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded">
+                        <p class="text-sm text-gray-700 mb-2">
+                            <i class="fas fa-info-circle text-green-500 mr-2"></i>
+                            <strong>Format Excel attendu :</strong>
+                        </p>
+                        <div class="text-sm text-gray-600 ml-6 space-y-1">
+                            <p><strong>Colonnes obligatoires</strong> (dans l'ordre) :</p>
+                            <ol class="list-decimal ml-4 space-y-1">
+                                <li><strong>Numéro de mission</strong> (ex: 1819992)</li>
+                                <li><strong>Date début</strong> (format: JJ/MM/AA HH:MM:SS ou DD/MM/YYYY HH:MM:SS)</li>
+                                <li><strong>Date fin</strong> (format: JJ/MM/AA HH:MM:SS ou DD/MM/YYYY HH:MM:SS)</li>
+                                <li><strong>Description</strong> (ex: Ordre et sécurité publique)</li>
+                                <li><strong>Titre</strong> (ex: Renfort PAM)</li>
+                                <li><strong>Code brigade</strong> (ex: 58577 ou BTA-PERSAN)</li>
+                            </ol>
+                            <p class="mt-2"><strong>Colonnes optionnelles</strong> :</p>
+                            <ol class="list-decimal ml-4 space-y-1" start="7">
+                                <li><strong>Effectifs requis</strong> (défaut: 1)</li>
+                                <li><strong>Priorité</strong> (normale/haute/urgente, défaut: normale)</li>
+                                <li><strong>Compétences</strong> (séparées par virgule)</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <!-- Zone de téléchargement du fichier -->
+                    <div class="mb-6 p-6 border-2 border-dashed border-green-300 rounded-lg bg-green-50">
+                        <label class="block text-sm font-semibold mb-2 text-green-900">
+                            <i class="fas fa-upload mr-2"></i>Sélectionnez votre fichier Excel
+                        </label>
+                        <input type="file" id="excel-file" accept=".xlsx,.xls"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white">
+                        <p class="text-xs text-gray-600 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>Formats acceptés : .xlsx, .xls
+                        </p>
+                    </div>
+                    
+                    <!-- Aperçu des données -->
+                    <div id="excel-preview" class="hidden mb-6">
+                        <label class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-eye mr-2"></i>Aperçu des données (5 premières lignes)
+                        </label>
+                        <div class="overflow-x-auto">
+                            <table id="excel-preview-table" class="min-w-full border-collapse border border-gray-300">
+                                <thead class="bg-gray-100">
+                                    <tr id="excel-preview-headers"></tr>
+                                </thead>
+                                <tbody id="excel-preview-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-600">
+                            <span id="excel-total-rows"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Résultats de l'import -->
+                    <div id="import-results" class="hidden mb-6"></div>
+                    
+                    <!-- Boutons d'action -->
+                    <div class="flex gap-3">
+                        <button onclick="processExcelFile()" id="btn-import-excel"
+                                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
+                            <i class="fas fa-file-import mr-2"></i>Importer les missions
+                        </button>
+                        <button onclick="downloadExcelTemplate()" 
+                                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-download mr-2"></i>Télécharger le modèle Excel
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- Section Nettoyage automatique des missions -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold mb-4">
@@ -420,6 +496,7 @@ app.get('/admin', (c) => {
         <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/locale/fr.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+        <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
         <script src="/static/admin.js"></script>
     </body>
     </html>

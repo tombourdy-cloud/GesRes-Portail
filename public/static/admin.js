@@ -2270,3 +2270,361 @@ switchTab = function(tabName) {
     checkCleanupStatus()
   }
 }
+
+// =============================================================================
+// IMPORT EXCEL DES MISSIONS
+// =============================================================================
+
+let excelData = null
+
+// Gérer la sélection du fichier Excel
+document.addEventListener('DOMContentLoaded', () => {
+  const fileInput = document.getElementById('excel-file')
+  if (fileInput) {
+    fileInput.addEventListener('change', handleExcelFileSelect)
+  }
+})
+
+function handleExcelFileSelect(event) {
+  const file = event.target.files[0]
+  if (!file) {
+    excelData = null
+    document.getElementById('excel-preview').classList.add('hidden')
+    document.getElementById('btn-import-excel').disabled = true
+    return
+  }
+
+  const reader = new FileReader()
+  
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result)
+      const workbook = XLSX.read(data, { type: 'array', cellDates: true })
+      
+      // Lire la première feuille
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      
+      // Convertir en JSON (avec l'en-tête)
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, dateNF: 'dd/mm/yyyy hh:mm:ss' })
+      
+      if (jsonData.length === 0) {
+        alert('❌ Le fichier Excel est vide')
+        return
+      }
+      
+      // Stocker les données
+      excelData = jsonData
+      
+      // Afficher l'aperçu
+      displayExcelPreview(jsonData)
+      
+      // Activer le bouton d'import
+      document.getElementById('btn-import-excel').disabled = false
+      
+    } catch (error) {
+      console.error('Erreur lecture Excel:', error)
+      alert('❌ Erreur lors de la lecture du fichier Excel')
+    }
+  }
+  
+  reader.readAsArrayBuffer(file)
+}
+
+function displayExcelPreview(data) {
+  const previewDiv = document.getElementById('excel-preview')
+  const headersRow = document.getElementById('excel-preview-headers')
+  const bodyTable = document.getElementById('excel-preview-body')
+  const totalRowsSpan = document.getElementById('excel-total-rows')
+  
+  // Nettoyer
+  headersRow.innerHTML = ''
+  bodyTable.innerHTML = ''
+  
+  // Afficher les 5 premières lignes
+  const previewCount = Math.min(6, data.length) // En-tête + 5 lignes
+  
+  for (let i = 0; i < previewCount; i++) {
+    const row = data[i]
+    
+    if (i === 0) {
+      // En-têtes (première ligne ou numérotation par défaut)
+      const isHeader = typeof row[0] === 'string' && !row[0].match(/^\d+$/)
+      
+      if (isHeader) {
+        row.forEach((cell, idx) => {
+          const th = document.createElement('th')
+          th.className = 'border border-gray-300 px-2 py-1 text-xs font-semibold'
+          th.textContent = cell || `Colonne ${idx + 1}`
+          headersRow.appendChild(th)
+        })
+      } else {
+        // Pas d'en-tête, créer des noms par défaut
+        const headers = ['N° Mission', 'Date début', 'Date fin', 'Description', 'Titre', 'Code brigade', 'Effectifs', 'Priorité', 'Compétences']
+        headers.forEach((name, idx) => {
+          if (idx < row.length) {
+            const th = document.createElement('th')
+            th.className = 'border border-gray-300 px-2 py-1 text-xs font-semibold'
+            th.textContent = name
+            headersRow.appendChild(th)
+          }
+        })
+        
+        // Ajouter la première ligne dans le body
+        const tr = document.createElement('tr')
+        tr.className = 'hover:bg-gray-50'
+        row.forEach(cell => {
+          const td = document.createElement('td')
+          td.className = 'border border-gray-300 px-2 py-1 text-xs'
+          td.textContent = cell || ''
+          tr.appendChild(td)
+        })
+        bodyTable.appendChild(tr)
+      }
+    } else {
+      // Lignes de données
+      const tr = document.createElement('tr')
+      tr.className = 'hover:bg-gray-50'
+      row.forEach(cell => {
+        const td = document.createElement('td')
+        td.className = 'border border-gray-300 px-2 py-1 text-xs'
+        td.textContent = cell || ''
+        tr.appendChild(td)
+      })
+      bodyTable.appendChild(tr)
+    }
+  }
+  
+  const dataRows = data.length - 1 // Enlever l'en-tête
+  totalRowsSpan.textContent = `Total : ${dataRows} mission(s) à importer`
+  
+  previewDiv.classList.remove('hidden')
+}
+
+async function processExcelFile() {
+  if (!excelData || excelData.length < 2) {
+    alert('❌ Aucune donnée à importer')
+    return
+  }
+  
+  const resultsDiv = document.getElementById('import-results')
+  resultsDiv.innerHTML = '<p class="text-sm text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Import en cours...</p>'
+  resultsDiv.classList.remove('hidden')
+  
+  // Déterminer si la première ligne est un en-tête
+  const hasHeader = typeof excelData[0][0] === 'string' && !excelData[0][0].match(/^\d+$/)
+  const startRow = hasHeader ? 1 : 0
+  
+  const missions = []
+  const errors = []
+  
+  // Charger la liste des brigades pour validation
+  try {
+    await loadAllData()
+  } catch (error) {
+    alert('❌ Erreur lors du chargement des brigades')
+    return
+  }
+  
+  // Parser chaque ligne
+  for (let i = startRow; i < excelData.length; i++) {
+    const row = excelData[i]
+    const rowNum = i + 1
+    
+    // Vérifier que la ligne n'est pas vide
+    if (!row || row.length === 0 || !row[0]) {
+      continue
+    }
+    
+    try {
+      // Colonnes : [0]N°mission, [1]Date début, [2]Date fin, [3]Description, [4]Titre, [5]Code brigade, [6]Effectifs, [7]Priorité, [8]Compétences
+      const numeroMission = String(row[0] || '').trim()
+      const dateDebut = parseExcelDate(row[1])
+      const dateFin = parseExcelDate(row[2])
+      const description = String(row[3] || '').trim()
+      const titre = String(row[4] || '').trim()
+      const codeBrigade = String(row[5] || '').trim()
+      const effectifsReqis = parseInt(row[6]) || 1
+      const priorite = String(row[7] || 'normale').trim().toLowerCase()
+      const competences = String(row[8] || '').trim()
+      
+      // Validations
+      if (!numeroMission) {
+        errors.push(`Ligne ${rowNum}: Numéro de mission manquant`)
+        continue
+      }
+      if (!dateDebut || !dateFin) {
+        errors.push(`Ligne ${rowNum}: Dates invalides`)
+        continue
+      }
+      if (!titre) {
+        errors.push(`Ligne ${rowNum}: Titre manquant`)
+        continue
+      }
+      if (!codeBrigade) {
+        errors.push(`Ligne ${rowNum}: Code brigade manquant`)
+        continue
+      }
+      
+      // Trouver l'ID de la brigade
+      const brigade = allBrigades.find(b => 
+        b.code === codeBrigade || 
+        b.nom.toLowerCase().includes(codeBrigade.toLowerCase())
+      )
+      
+      if (!brigade) {
+        errors.push(`Ligne ${rowNum}: Brigade introuvable (${codeBrigade})`)
+        continue
+      }
+      
+      // Valider priorité
+      const validPriorities = ['basse', 'normale', 'haute', 'urgente']
+      const finalPriorite = validPriorities.includes(priorite) ? priorite : 'normale'
+      
+      missions.push({
+        numero_mission: numeroMission,
+        titre: titre,
+        description: description || titre,
+        brigade_id: brigade.id,
+        date_debut: dateDebut,
+        date_fin: dateFin,
+        effectifs_requis: effectifsReqis,
+        priorite: finalPriorite,
+        competences_requises: competences || null
+      })
+      
+    } catch (error) {
+      errors.push(`Ligne ${rowNum}: ${error.message}`)
+    }
+  }
+  
+  // Afficher les résultats
+  if (missions.length === 0) {
+    resultsDiv.innerHTML = `
+      <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded">
+        <p class="text-sm text-red-800 font-semibold"><i class="fas fa-times-circle mr-2"></i>Aucune mission valide trouvée</p>
+        <ul class="text-xs text-red-700 mt-2 ml-4">
+          ${errors.map(e => `<li>• ${e}</li>`).join('')}
+        </ul>
+      </div>
+    `
+    return
+  }
+  
+  // Confirmation
+  const confirm = window.confirm(
+    `📊 Import Excel\n\n` +
+    `✅ ${missions.length} mission(s) valide(s)\n` +
+    `${errors.length > 0 ? `⚠️ ${errors.length} erreur(s)\n` : ''}` +
+    `\nConfirmez-vous l'import ?`
+  )
+  
+  if (!confirm) {
+    resultsDiv.classList.add('hidden')
+    return
+  }
+  
+  // Envoyer les missions à l'API
+  try {
+    const response = await axios.post('/api/missions/import-batch', {
+      missions: missions
+    })
+    
+    const { success, failed, total } = response.data
+    
+    resultsDiv.innerHTML = `
+      <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded">
+        <p class="text-sm text-green-800 font-semibold">
+          <i class="fas fa-check-circle mr-2"></i>Import terminé
+        </p>
+        <div class="text-xs text-green-700 mt-2">
+          <p>✅ ${success} mission(s) créée(s) avec succès</p>
+          ${failed > 0 ? `<p class="text-red-600">❌ ${failed} échec(s)</p>` : ''}
+          ${errors.length > 0 ? `<p class="text-yellow-600">⚠️ ${errors.length} ligne(s) ignorée(s) (erreurs de format)</p>` : ''}
+        </div>
+        ${errors.length > 0 ? `
+          <details class="mt-2">
+            <summary class="text-xs text-gray-600 cursor-pointer hover:text-gray-800">Voir les erreurs</summary>
+            <ul class="text-xs text-gray-700 mt-1 ml-4">
+              ${errors.map(e => `<li>• ${e}</li>`).join('')}
+            </ul>
+          </details>
+        ` : ''}
+      </div>
+    `
+    
+    // Recharger les données
+    await loadAllData()
+    
+    // Réinitialiser le formulaire
+    document.getElementById('excel-file').value = ''
+    excelData = null
+    document.getElementById('excel-preview').classList.add('hidden')
+    document.getElementById('btn-import-excel').disabled = true
+    
+  } catch (error) {
+    console.error('Erreur import:', error)
+    resultsDiv.innerHTML = `
+      <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded">
+        <p class="text-sm text-red-800 font-semibold">
+          <i class="fas fa-times-circle mr-2"></i>Erreur lors de l'import
+        </p>
+        <p class="text-xs text-red-700 mt-1">${error.response?.data?.error || error.message}</p>
+      </div>
+    `
+  }
+}
+
+function parseExcelDate(dateValue) {
+  if (!dateValue) return null
+  
+  // Si c'est déjà une date JavaScript
+  if (dateValue instanceof Date) {
+    return dateValue.toISOString().slice(0, 19).replace('T', ' ')
+  }
+  
+  // Si c'est un nombre Excel (serial date)
+  if (typeof dateValue === 'number') {
+    const date = XLSX.SSF.parse_date_code(dateValue)
+    return `${String(date.y).padStart(4, '0')}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')} ${String(date.H || 0).padStart(2, '0')}:${String(date.M || 0).padStart(2, '0')}:${String(date.S || 0).padStart(2, '0')}`
+  }
+  
+  // Si c'est une chaîne, parser plusieurs formats
+  if (typeof dateValue === 'string') {
+    const str = dateValue.trim()
+    
+    // Format: DD/MM/YY HH:MM:SS ou DD/MM/YYYY HH:MM:SS
+    const match1 = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/)
+    if (match1) {
+      const [, day, month, year, hour, min, sec] = match1
+      const fullYear = year.length === 2 ? `20${year}` : year
+      return `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hour.padStart(2, '0')}:${min.padStart(2, '0')}:${sec.padStart(2, '0')}`
+    }
+    
+    // Format: YYYY-MM-DD HH:MM:SS
+    const match2 = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/)
+    if (match2) {
+      const [, year, month, day, hour, min, sec] = match2
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hour.padStart(2, '0')}:${min.padStart(2, '0')}:${sec.padStart(2, '0')}`
+    }
+  }
+  
+  return null
+}
+
+function downloadExcelTemplate() {
+  // Créer un fichier Excel d'exemple
+  const data = [
+    ['Numéro de mission', 'Date début', 'Date fin', 'Description', 'Titre', 'Code brigade', 'Effectifs requis', 'Priorité', 'Compétences'],
+    ['1819992', '13/03/26 15:00:00', '13/03/26 23:00:00', 'Ordre et sécurité publique', 'Renfort PAM', '58577', 2, 'normale', 'PSC1'],
+    ['1827585', '14/03/26 00:30:00', '14/03/26 07:00:00', 'Ordre et sécurité publique', 'Renfort BGE', 'BTA-PERSAN', 1, 'haute', '']
+  ]
+  
+  const ws = XLSX.utils.aoa_to_sheet(data)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Missions')
+  
+  // Télécharger
+  XLSX.writeFile(wb, 'modele_import_missions.xlsx')
+}
+
