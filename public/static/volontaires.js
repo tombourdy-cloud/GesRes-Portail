@@ -50,17 +50,17 @@ function renderCalendar() {
   
   let html = `
     <div class="text-center mb-4 flex items-center justify-between">
-      <button onclick="previousMonth()" class="p-2 hover:bg-gray-800 rounded">
+      <button onclick="previousMonth()" class="p-2 hover:bg-gray-200 rounded text-gray-700">
         <i class="fas fa-chevron-left"></i>
       </button>
-      <span class="font-bold text-lg capitalize">${monthName}</span>
-      <button onclick="nextMonth()" class="p-2 hover:bg-gray-800 rounded">
+      <span class="font-bold text-lg capitalize text-gray-800">${monthName}</span>
+      <button onclick="nextMonth()" class="p-2 hover:bg-gray-200 rounded text-gray-700">
         <i class="fas fa-chevron-right"></i>
       </button>
     </div>
     
     <!-- Jours de la semaine -->
-    <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs font-medium text-gray-400">
+    <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs font-medium text-gray-600">
       <div>L</div>
       <div>M</div>
       <div>M</div>
@@ -87,9 +87,9 @@ function renderCalendar() {
     const hasMissions = missionsByDay[dateKey] > 0
     const isToday = date.isSame(dayjs(), 'day')
     
-    const bgColor = isSelected ? 'bg-blue-600' : isToday ? 'bg-gray-700' : 'bg-gray-800'
-    const textColor = isSelected || isToday ? 'text-white' : 'text-gray-300'
-    const hoverClass = 'hover:bg-gray-700 cursor-pointer'
+    const bgColor = isSelected ? 'bg-blue-600' : isToday ? 'bg-blue-100' : 'bg-white'
+    const textColor = isSelected ? 'text-white' : isToday ? 'text-blue-900 font-bold' : 'text-gray-700'
+    const hoverClass = 'hover:bg-blue-50 cursor-pointer border border-gray-200'
     
     html += `
       <div onclick="toggleDate('${dateKey}')" 
@@ -97,7 +97,7 @@ function renderCalendar() {
         <span class="font-medium">${day}</span>
         ${hasMissions ? `
           <div class="flex gap-1 mt-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
           </div>
         ` : ''}
       </div>
@@ -139,7 +139,7 @@ function renderBrigadeFilters() {
   
   let html = `
     <button onclick="toggleAllBrigades()" 
-            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedBrigades.length === 0 ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}">
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedBrigades.length === 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}">
       <i class="fas fa-check-circle mr-1"></i>
       Toutes les unités
     </button>
@@ -147,7 +147,7 @@ function renderBrigadeFilters() {
   
   allBrigades.forEach(brigade => {
     const isSelected = selectedBrigades.includes(brigade.id)
-    const bgColor = isSelected ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+    const bgColor = isSelected ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
     
     html += `
       <button onclick="toggleBrigade(${brigade.id})" 
@@ -204,9 +204,9 @@ function renderMissions() {
   
   if (filteredMissions.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full text-center py-12 text-gray-400">
+      <div class="col-span-full text-center py-12 text-gray-500">
         <i class="fas fa-calendar-times text-4xl mb-4"></i>
-        <p>Aucune mission trouvée</p>
+        <p class="font-medium">Aucune mission trouvée</p>
         <p class="text-sm mt-2">Sélectionnez une ou plusieurs dates dans le calendrier</p>
       </div>
     `
@@ -224,12 +224,12 @@ function renderMissions() {
     const isConvoque = mission.priorite === 'haute' || mission.priorite === 'urgente'
     
     html += `
-      <div class="bg-gray-900 rounded-lg p-4 border border-gray-700 hover:border-indigo-500 transition-colors">
+      <div class="bg-white rounded-lg p-4 border-2 border-gray-200 hover:border-blue-500 transition-colors shadow-sm">
         <!-- En-tête -->
         <div class="flex items-start justify-between mb-3">
           <div class="flex-1">
-            <h3 class="font-bold text-white mb-1">${mission.titre}</h3>
-            <div class="text-sm text-indigo-400">${brigade?.nom || 'Brigade inconnue'}</div>
+            <h3 class="font-bold text-gray-900 mb-1">${mission.titre}</h3>
+            <div class="text-sm text-blue-600 font-medium">${brigade?.nom || 'Brigade inconnue'}</div>
           </div>
           ${isConvoque ? `
             <span class="bg-green-600 text-white text-xs px-2 py-1 rounded-full font-medium">
@@ -239,21 +239,21 @@ function renderMissions() {
         </div>
         
         <!-- Informations -->
-        <div class="space-y-2 text-sm text-gray-400 mb-3">
-          ${mission.description ? `<p class="text-xs">${mission.description}</p>` : ''}
+        <div class="space-y-2 text-sm text-gray-600 mb-3">
+          ${mission.description ? `<p class="text-xs text-gray-500">${mission.description}</p>` : ''}
           
           <div class="flex items-center">
-            <i class="fas fa-hashtag w-5 text-gray-500"></i>
+            <i class="fas fa-hashtag w-5 text-gray-400"></i>
             <span>Mission ${mission.numero_mission}</span>
           </div>
           
           <div class="flex items-center">
-            <i class="fas fa-calendar w-5 text-gray-500"></i>
+            <i class="fas fa-calendar w-5 text-gray-400"></i>
             <span>${dayjs(mission.date_debut).format('DD/MM/YYYY')}</span>
           </div>
           
           <div class="flex items-center">
-            <i class="fas fa-clock w-5 text-gray-500"></i>
+            <i class="fas fa-clock w-5 text-gray-400"></i>
             <span>
               du ${dayjs(mission.date_debut).format('DD/MM/YYYY HH:mm')}
               au ${dayjs(mission.date_fin).format('DD/MM/YYYY HH:mm')}
@@ -262,22 +262,22 @@ function renderMissions() {
         </div>
         
         <!-- Effectifs -->
-        <div class="border-t border-gray-700 pt-3">
+        <div class="border-t border-gray-200 pt-3">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm text-gray-400">Effectifs</span>
+            <span class="text-sm text-gray-600 font-medium">Effectifs</span>
             <span class="${statutClass} text-white text-xs px-2 py-1 rounded font-medium">
               ${mission.effectifs_assignes} / ${mission.effectifs_requis}
             </span>
           </div>
           
           ${mission.gendarmes_assignes && mission.gendarmes_assignes.length > 0 ? `
-            <div class="text-xs text-gray-400 mb-2">
+            <div class="text-xs text-gray-600 mb-2">
               <i class="fas fa-users mr-1"></i>
               ${mission.gendarmes_assignes.map(g => `${g.nom} ${g.prenom}`).join(', ')}
             </div>
           ` : ''}
           
-          <div class="text-xs ${placesLibres > 0 ? 'text-green-400' : 'text-orange-400'}">
+          <div class="text-xs ${placesLibres > 0 ? 'text-green-600' : 'text-orange-600'} font-medium">
             ${placesLibres > 0 ? 
               `<i class="fas fa-check-circle mr-1"></i>${placesLibres} place(s) disponible(s)` : 
               `<i class="fas fa-times-circle mr-1"></i>Complet`

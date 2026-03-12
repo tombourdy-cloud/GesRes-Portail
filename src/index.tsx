@@ -82,52 +82,81 @@ app.get('/volontaires', (c) => {
         <title>Appels à volontaires - GesRes</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+          body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          }
+        </style>
     </head>
-    <body class="bg-gray-900 text-white">
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <img src="/static/default-logo.png" alt="Logo" class="h-10 w-10 sm:h-12 sm:w-12 object-contain bg-white rounded-lg p-1 shadow-md">
+                        <div>
+                            <h1 class="text-base sm:text-xl font-bold">GesRes - Appels à volontaires</h1>
+                            <p class="text-xs text-blue-200">Portail des missions disponibles</p>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex space-x-3">
+                        <a href="/volontaires" class="px-4 py-2 bg-white text-blue-900 rounded-lg hover:bg-blue-50 font-medium transition-colors shadow-md">
+                            <i class="fas fa-hand-paper mr-2"></i>Appels à volontaires
+                        </a>
+                        <a href="/admin" class="px-4 py-2 bg-blue-800 hover:bg-blue-700 rounded-lg transition-colors">
+                            <i class="fas fa-cog mr-2"></i>Administration
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
         <div class="container mx-auto px-4 py-8 max-w-7xl">
-          <h1 class="text-3xl font-bold text-indigo-400 mb-8">Appels à volontaires</h1>
+          <h1 class="text-3xl font-bold text-blue-900 mb-8">Appels à volontaires</h1>
           
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Colonne gauche : Affichage & Filtres -->
             <div class="lg:col-span-1 space-y-6">
               <!-- Section Affichage -->
-              <div class="bg-gray-800 rounded-lg p-6">
-                <h2 class="text-xl font-bold mb-4">Affichage</h2>
+              <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Affichage</h2>
                 <div class="space-y-3">
-                  <div class="text-sm text-gray-400 mb-3">
+                  <div class="text-sm text-gray-600 mb-3 font-medium">
                     Missions à venir
                   </div>
                   <p class="text-xs text-gray-500">Appels à volontaires, volontariats, disponibilités</p>
                   
                   <div class="space-y-2">
-                    <label class="flex items-center space-x-3 cursor-pointer">
-                      <input type="checkbox" id="filter-volontaire" checked class="w-5 h-5 rounded text-indigo-600">
+                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
+                      <input type="checkbox" id="filter-volontaire" checked class="w-5 h-5 rounded text-blue-600">
                       <span class="flex items-center">
                         <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                        Appel à volontaire
+                        <span class="text-gray-700">Appel à volontaire</span>
                       </span>
                     </label>
                     
-                    <label class="flex items-center space-x-3 cursor-pointer">
-                      <input type="checkbox" id="filter-disponibilite" checked class="w-5 h-5 rounded text-indigo-600">
-                      <span class="text-blue-400">DISPONIBILITÉ</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
+                      <input type="checkbox" id="filter-disponibilite" checked class="w-5 h-5 rounded text-blue-600">
+                      <span class="text-blue-600 font-medium">DISPONIBILITÉ</span>
                     </label>
                     
-                    <label class="flex items-center space-x-3 cursor-pointer">
-                      <input type="checkbox" id="filter-convocation" checked class="w-5 h-5 rounded text-indigo-600">
-                      <span class="text-green-400">CONVOCATION</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
+                      <input type="checkbox" id="filter-convocation" checked class="w-5 h-5 rounded text-green-600">
+                      <span class="text-green-600 font-medium">CONVOCATION</span>
                     </label>
                   </div>
                 </div>
               </div>
               
               <!-- Section Calendrier -->
-              <div class="bg-gray-800 rounded-lg p-6">
-                <div class="text-center text-sm text-gray-400 mb-4">
+              <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="text-center text-sm text-gray-600 mb-4">
                   Veuillez sélectionner au moins une journée<br>pour compléter votre affichage
                 </div>
                 
-                <div id="calendar-container" class="bg-gray-900 rounded-lg p-4">
+                <div id="calendar-container" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <!-- Calendrier généré dynamiquement -->
                 </div>
               </div>
@@ -135,9 +164,9 @@ app.get('/volontaires', (c) => {
             
             <!-- Colonne droite : Sélection des missions -->
             <div class="lg:col-span-2">
-              <div class="bg-gray-800 rounded-lg p-6">
-                <h2 class="text-xl font-bold mb-4">Sélection</h2>
-                <p class="text-sm text-gray-400 mb-6">
+              <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Sélection</h2>
+                <p class="text-sm text-gray-600 mb-6">
                   Détail de la mission sélectionnée dans le calendrier du bandeau supérieur.
                 </p>
                 
@@ -167,118 +196,9 @@ app.get('/volontaires', (c) => {
   `)
 })
 
-// Page d'accueil - Liste des missions
+// Page d'accueil - Redirection vers appels à volontaires
 app.get('/', (c) => {
-  return c.html(`
-    <!DOCTYPE html>
-    <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>GesRes - Gestion des Missions Réserve</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-        <link href="/static/style.css" rel="stylesheet">
-    </head>
-    <body class="bg-gray-50">
-        <!-- Menu hamburger mobile -->
-        <div id="hamburger-menu" class="hamburger-menu fixed top-4 right-4 z-50" onclick="toggleMobileMenu()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-
-        <!-- Backdrop du menu mobile -->
-        <div id="mobile-nav-backdrop" class="mobile-nav-backdrop" onclick="closeMobileMenu()"></div>
-
-        <!-- Menu mobile overlay -->
-        <div id="mobile-nav-overlay" class="mobile-nav-overlay">
-            <div class="flex flex-col space-y-4">
-                <div class="text-center mb-6">
-                    <img id="mobile-logo" src="/static/default-logo.png" alt="Logo" class="h-20 w-20 mx-auto object-contain bg-white rounded-lg p-2 shadow-lg mb-3">
-                    <h2 class="text-xl font-bold text-white">GesRes</h2>
-                    <p class="text-sm text-blue-200">Missions Réserve</p>
-                </div>
-                
-                <button onclick="navigateFromMobile('home')" class="w-full px-6 py-4 bg-white text-blue-900 rounded-lg hover:bg-blue-50 font-medium transition-colors shadow-md text-left">
-                    <i class="fas fa-list mr-3"></i>Missions disponibles
-                </button>
-                
-                <button onclick="navigateFromMobile('admin')" class="w-full px-6 py-4 bg-blue-700 hover:bg-blue-600 text-white rounded-lg transition-colors text-left">
-                    <i class="fas fa-cog mr-3"></i>Administration
-                </button>
-                
-                <div class="mt-8 pt-8 border-t border-blue-700 text-center text-blue-200 text-sm">
-                    <p>Gendarmerie Nationale</p>
-                    <p class="text-xs mt-1">Version Mobile 1.0</p>
-                </div>
-            </div>
-        </div>
-
-        <nav class="bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-lg">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <img id="nav-logo" src="/static/default-logo.png" alt="Logo" class="h-10 w-10 sm:h-12 sm:w-12 object-contain bg-white rounded-lg p-1 shadow-md">
-                        <div class="hidden sm:block">
-                            <h1 class="text-base sm:text-xl font-bold">GesRes - Gestion des Missions Réserve</h1>
-                            <p class="text-xs text-blue-200">Portail des missions disponibles</p>
-                        </div>
-                        <div class="block sm:hidden">
-                            <h1 class="text-base font-bold">GesRes</h1>
-                            <p class="text-xs text-blue-200">Missions</p>
-                        </div>
-                    </div>
-                    <div class="desktop-menu hidden sm:flex space-x-3">
-                        <a href="/" class="px-4 py-2 bg-white text-blue-900 rounded-lg hover:bg-blue-50 font-medium transition-colors shadow-md">
-                            <i class="fas fa-list mr-2"></i>Missions
-                        </a>
-                        <a href="/volontaires" class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded-lg transition-colors">
-                            <i class="fas fa-hand-paper mr-2"></i>Appels à volontaires
-                        </a>
-                        <a href="/admin" class="px-4 py-2 bg-blue-800 hover:bg-blue-700 rounded-lg transition-colors">
-                            <i class="fas fa-cog mr-2"></i>Administration
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Breadcrumb -->
-        <div class="bg-blue-800 text-white shadow-inner">
-            <div class="container mx-auto px-4 py-2 sm:py-3">
-                <div id="breadcrumb" class="breadcrumb flex items-center text-xs sm:text-sm flex-wrap gap-2">
-                    <i class="fas fa-home text-blue-300"></i>
-                    <span class="text-white font-medium ml-1 sm:ml-2">Sélection de la compagnie</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-            <!-- Contenu principal -->
-            <div id="main-content"></div>
-        </div>
-
-        <!-- Modal informations brigade -->
-        <div id="modal-brigade-info" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-            <div class="modal-content bg-white rounded-lg p-4 sm:p-6 max-w-2xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl sm:text-2xl font-bold" id="brigade-info-titre">Informations Brigade</h2>
-                    <button onclick="hideBrigadeInfo()" class="text-gray-500 hover:text-gray-700 p-2">
-                        <i class="fas fa-times text-xl sm:text-2xl"></i>
-                    </button>
-                </div>
-                <div id="brigade-info-content"></div>
-            </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/locale/fr.js"></script>
-        <script src="/static/app.js"></script>
-    </body>
-    </html>
-  `)
+  return c.redirect('/volontaires')
 })
 
 // Page d'administration
