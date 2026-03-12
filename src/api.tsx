@@ -600,6 +600,28 @@ app.delete('/api/missions/:id', async (c) => {
   return c.json({ message: 'Mission supprimée avec succès' })
 })
 
+// DELETE /api/missions/all - Supprimer toutes les missions
+app.delete('/api/missions/all', async (c) => {
+  const { DB } = c.env
+  
+  try {
+    // Compter d'abord le nombre de missions
+    const countResult = await DB.prepare(`SELECT COUNT(*) as count FROM missions`).first()
+    const count = countResult?.count || 0
+    
+    // Supprimer toutes les missions
+    await DB.prepare(`DELETE FROM missions`).run()
+    
+    return c.json({ 
+      message: 'Toutes les missions ont été supprimées', 
+      deleted: count 
+    })
+  } catch (error) {
+    console.error('Erreur suppression missions:', error)
+    return c.json({ error: 'Erreur lors de la suppression des missions' }, 500)
+  }
+})
+
 // ==================== GENDARMES ====================
 
 // GET /api/gendarmes - Récupérer tous les gendarmes

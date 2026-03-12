@@ -193,6 +193,9 @@ function renderCompagnieCards() {
         <button onclick="showImportExcelModal()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
           <i class="fas fa-file-excel mr-2"></i>Importer depuis Excel
         </button>
+        <button onclick="deleteAllMissions()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">
+          <i class="fas fa-trash-alt mr-2"></i>Supprimer toutes les missions
+        </button>
       </div>
       <div class="flex items-center gap-2 mb-4">
         <button onclick="resetMissionView()" class="text-sm text-gray-600 hover:text-gray-900">
@@ -414,8 +417,8 @@ function renderMissionsByMonth() {
                   ${m.description ? `<div class="text-sm text-gray-500 mt-1">${m.description.substring(0, 50)}${m.description.length > 50 ? '...' : ''}</div>` : ''}
                 </td>
                 <td class="px-4 py-3 text-sm">
-                  <div>${dayjs(m.date_debut).format('DD/MM/YYYY')}</div>
-                  ${m.date_fin ? `<div class="text-xs text-gray-500">au ${dayjs(m.date_fin).format('DD/MM/YYYY')}</div>` : ''}
+                  <div>${dayjs(m.date_debut).format('DD/MM/YYYY HH:mm')}</div>
+                  ${m.date_fin ? `<div class="text-xs text-gray-500">au ${dayjs(m.date_fin).format('DD/MM/YYYY HH:mm')}</div>` : ''}
                 </td>
                 <td class="px-4 py-3 text-sm font-medium">
                   <span class="${m.effectifs_assignes >= m.effectifs_requis ? 'text-green-600' : 'text-orange-600'}">
@@ -496,7 +499,7 @@ function renderMissionsByBrigade() {
                   <div class="font-medium text-gray-900">${m.titre}</div>
                   ${m.description ? `<div class="text-sm text-gray-500 mt-1">${m.description.substring(0, 50)}${m.description.length > 50 ? '...' : ''}</div>` : ''}
                 </td>
-                <td class="px-4 py-3 text-sm">${dayjs(m.date_debut).format('DD/MM/YYYY')}</td>
+                <td class="px-4 py-3 text-sm">${dayjs(m.date_debut).format('DD/MM/YYYY HH:mm')}</td>
                 <td class="px-4 py-3 text-sm font-medium">
                   <span class="${m.effectifs_assignes >= m.effectifs_requis ? 'text-green-600' : 'text-orange-600'}">
                     ${m.effectifs_assignes}/${m.effectifs_requis}
@@ -761,6 +764,32 @@ async function deleteMission(missionId) {
     alert('Mission supprimée')
   } catch (error) {
     alert('Erreur suppression: ' + error.message)
+  }
+}
+
+async function deleteAllMissions() {
+  const confirmMsg = `⚠️ ATTENTION ⚠️\n\nVous êtes sur le point de supprimer TOUTES les missions.\nCette action est IRRÉVERSIBLE.\n\nNombre total de missions : ${allMissions.length}\n\nÊtes-vous absolument certain de vouloir continuer ?`
+  
+  if (!confirm(confirmMsg)) {
+    return
+  }
+  
+  // Deuxième confirmation
+  const doubleConfirm = prompt('Pour confirmer, tapez "SUPPRIMER TOUT" (en majuscules) :')
+  
+  if (doubleConfirm !== 'SUPPRIMER TOUT') {
+    alert('Suppression annulée')
+    return
+  }
+  
+  try {
+    const response = await axios.delete('/api/missions/all')
+    alert(`✅ ${response.data.deleted} mission(s) supprimée(s) avec succès`)
+    await loadAllData()
+    renderCompagnieCards()
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error)
+    alert('Erreur lors de la suppression des missions')
   }
 }
 
@@ -3045,7 +3074,10 @@ async function createAllMissionsAutomatically() {
       const dateDebut = formatExcelDate(mission.date_debut, mission.heure_debut)
       const dateFin = formatExcelDate(mission.date_fin, mission.heure_fin)
       
-      // Créer la mission via l'API
+      // Vérifier si la mission existe déjà (par numéro de mission)
+      const existingMission = allMissions.find(m => m.numero_mission === mission.numero_mission)
+      
+      // Créer ou mettre à jour la mission via l'API
       const missionData = {
         numero_mission: mission.numero_mission,
         titre: mission.titre,
@@ -3058,7 +3090,16 @@ async function createAllMissionsAutomatically() {
         competences_requises: mission.competences_requises || ''
       }
       
-      await axios.post('/api/missions', missionData)
+      if (existingMission) {
+        // Mission existe : la mettre à jour (écrasement)
+        document.getElementById('progress-status').textContent = `Mise à jour de la mission ${mission.numero_mission}...`
+        await axios.put(`/api/missions/${existingMission.id}`, missionData)
+      } else {
+        // Mission n'existe pas : la créer
+        document.getElementById('progress-status').textContent = `Création de la mission ${mission.numero_mission}...`
+        await axios.post('/api/missions', missionData)
+      }
+      
       successCount++
       
     } catch (error) {
