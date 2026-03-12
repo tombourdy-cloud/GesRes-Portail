@@ -71,6 +71,102 @@ app.get('/login', (c) => {
   `)
 })
 
+// Page Appels à volontaires (gendarmes)
+app.get('/volontaires', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Appels à volontaires - GesRes</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-900 text-white">
+        <div class="container mx-auto px-4 py-8 max-w-7xl">
+          <h1 class="text-3xl font-bold text-indigo-400 mb-8">Appels à volontaires</h1>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Colonne gauche : Affichage & Filtres -->
+            <div class="lg:col-span-1 space-y-6">
+              <!-- Section Affichage -->
+              <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Affichage</h2>
+                <div class="space-y-3">
+                  <div class="text-sm text-gray-400 mb-3">
+                    Missions à venir
+                  </div>
+                  <p class="text-xs text-gray-500">Appels à volontaires, volontariats, disponibilités</p>
+                  
+                  <div class="space-y-2">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                      <input type="checkbox" id="filter-volontaire" checked class="w-5 h-5 rounded text-indigo-600">
+                      <span class="flex items-center">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                        Appel à volontaire
+                      </span>
+                    </label>
+                    
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                      <input type="checkbox" id="filter-disponibilite" checked class="w-5 h-5 rounded text-indigo-600">
+                      <span class="text-blue-400">DISPONIBILITÉ</span>
+                    </label>
+                    
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                      <input type="checkbox" id="filter-convocation" checked class="w-5 h-5 rounded text-indigo-600">
+                      <span class="text-green-400">CONVOCATION</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Section Calendrier -->
+              <div class="bg-gray-800 rounded-lg p-6">
+                <div class="text-center text-sm text-gray-400 mb-4">
+                  Veuillez sélectionner au moins une journée<br>pour compléter votre affichage
+                </div>
+                
+                <div id="calendar-container" class="bg-gray-900 rounded-lg p-4">
+                  <!-- Calendrier généré dynamiquement -->
+                </div>
+              </div>
+            </div>
+            
+            <!-- Colonne droite : Sélection des missions -->
+            <div class="lg:col-span-2">
+              <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Sélection</h2>
+                <p class="text-sm text-gray-400 mb-6">
+                  Détail de la mission sélectionnée dans le calendrier du bandeau supérieur.
+                </p>
+                
+                <!-- Filtres par brigade -->
+                <div id="brigade-filters" class="flex flex-wrap gap-2 mb-6">
+                  <!-- Boutons brigade générés dynamiquement -->
+                </div>
+                
+                <!-- Liste des missions -->
+                <div id="missions-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Cartes mission générées dynamiquement -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/locale/fr.js"></script>
+        <script>
+          dayjs.locale('fr')
+        </script>
+        <script src="/static/volontaires.js"></script>
+    </body>
+    </html>
+  `)
+})
+
 // Page d'accueil - Liste des missions
 app.get('/', (c) => {
   return c.html(`
@@ -136,6 +232,9 @@ app.get('/', (c) => {
                     <div class="desktop-menu hidden sm:flex space-x-3">
                         <a href="/" class="px-4 py-2 bg-white text-blue-900 rounded-lg hover:bg-blue-50 font-medium transition-colors shadow-md">
                             <i class="fas fa-list mr-2"></i>Missions
+                        </a>
+                        <a href="/volontaires" class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded-lg transition-colors">
+                            <i class="fas fa-hand-paper mr-2"></i>Appels à volontaires
                         </a>
                         <a href="/admin" class="px-4 py-2 bg-blue-800 hover:bg-blue-700 rounded-lg transition-colors">
                             <i class="fas fa-cog mr-2"></i>Administration
