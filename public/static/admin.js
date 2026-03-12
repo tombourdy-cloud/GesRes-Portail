@@ -1043,6 +1043,16 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('close-modal-brigade').addEventListener('click', () => {
     document.getElementById('modal-brigade').classList.add('hidden')
   })
+  
+  // Attacher l'événement pour l'import Excel (APRÈS injection des modales)
+  const importFileInput = document.getElementById('import-excel-file')
+  if (importFileInput) {
+    importFileInput.addEventListener('change', handleImportExcelFileSelect)
+  }
+  const importCloseBtn = document.getElementById('close-modal-import-excel')
+  if (importCloseBtn) {
+    importCloseBtn.addEventListener('click', closeImportExcelModal)
+  }
   document.getElementById('close-modal-gendarme').addEventListener('click', () => {
     document.getElementById('modal-gendarme').classList.add('hidden')
   })
@@ -1639,12 +1649,12 @@ function injectModals() {
         <!-- Zone de téléchargement -->
         <div class="mb-6 p-6 border-2 border-dashed border-green-300 rounded-lg bg-green-50">
           <label class="block text-sm font-semibold mb-2 text-green-900">
-            <i class="fas fa-upload mr-2"></i>Sélectionnez votre fichier Excel
+            <i class="fas fa-upload mr-2"></i>Sélectionnez votre fichier Excel ou ODS
           </label>
-          <input type="file" id="import-excel-file" accept=".xlsx,.xls"
+          <input type="file" id="import-excel-file" accept=".xlsx,.xls,.ods"
                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white">
           <p class="text-xs text-gray-600 mt-2">
-            <i class="fas fa-info-circle mr-1"></i>Formats acceptés : .xlsx, .xls
+            <i class="fas fa-info-circle mr-1"></i>Formats acceptés : .xlsx, .xls, .ods
           </p>
         </div>
         
@@ -2762,20 +2772,6 @@ function showImportExcelModal() {
 function closeImportExcelModal() {
   document.getElementById('modal-import-excel').classList.add('hidden')
 }
-
-// Gérer la sélection du fichier Excel
-document.addEventListener('DOMContentLoaded', () => {
-  const fileInput = document.getElementById('import-excel-file')
-  if (fileInput) {
-    fileInput.addEventListener('change', handleImportExcelFileSelect)
-  }
-  
-  // Bouton fermer modale
-  const closeBtn = document.getElementById('close-modal-import-excel')
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeImportExcelModal)
-  }
-})
 
 function handleImportExcelFileSelect(event) {
   const file = event.target.files[0]
