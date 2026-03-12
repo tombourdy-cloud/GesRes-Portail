@@ -117,39 +117,8 @@ app.get('/volontaires', (c) => {
           <h1 class="text-3xl font-bold text-blue-900 mb-8">Appels à volontaires</h1>
           
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Colonne gauche : Affichage & Filtres -->
-            <div class="lg:col-span-1 space-y-6">
-              <!-- Section Affichage -->
-              <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Affichage</h2>
-                <div class="space-y-3">
-                  <div class="text-sm text-gray-600 mb-3 font-medium">
-                    Missions à venir
-                  </div>
-                  <p class="text-xs text-gray-500">Appels à volontaires, volontariats, disponibilités</p>
-                  
-                  <div class="space-y-2">
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-                      <input type="checkbox" id="filter-volontaire" checked class="w-5 h-5 rounded text-blue-600">
-                      <span class="flex items-center">
-                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                        <span class="text-gray-700">Appel à volontaire</span>
-                      </span>
-                    </label>
-                    
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-                      <input type="checkbox" id="filter-disponibilite" checked class="w-5 h-5 rounded text-blue-600">
-                      <span class="text-blue-600 font-medium">DISPONIBILITÉ</span>
-                    </label>
-                    
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-                      <input type="checkbox" id="filter-convocation" checked class="w-5 h-5 rounded text-green-600">
-                      <span class="text-green-600 font-medium">CONVOCATION</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-              
+            <!-- Colonne gauche : Calendrier uniquement -->
+            <div class="lg:col-span-1">
               <!-- Section Calendrier -->
               <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
                 <div class="text-center text-sm text-gray-600 mb-4">
