@@ -1108,18 +1108,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       const response = await axios.get('/api/missions')
       allMissions = response.data
       renderCompagnieCards()
-      
-      // Si on est en mode import Excel, afficher la mission suivante
-      if (importedMissions.length > 0 && currentImportIndex < importedMissions.length) {
-        setTimeout(() => {
-          showNextImportedMission()
-        }, 500)  // Petit délai pour que l'utilisateur voie la confirmation
-      } else if (importedMissions.length > 0 && currentImportIndex >= importedMissions.length) {
-        // Fin de l'import
-        alert(`✅ Import Excel terminé!\n\n${importedMissions.length} mission(s) créée(s) avec succès.`)
-        importedMissions = []
-        currentImportIndex = 0
-      }
     } catch (error) {
       console.error('❌ Erreur création mission:', error)
       console.error('❌ Détails:', error.response?.data)
@@ -2959,15 +2947,126 @@ async function startImportFromExcel() {
     return
   }
   
-  currentImportIndex = 0
-  
   // Fermer la modale d'import
   closeImportExcelModal()
   
-  // Afficher la première mission dans la modale de création
-  await showNextImportedMission()
+  // Créer toutes les missions automatiquement
+  await createAllMissionsAutomatically()
 }
 
+async function createAllMissionsAutomatically() {
+  const totalMissions = importedMissions.length
+  let successCount = 0
+  let failedCount = 0
+  const errors = []
+  
+  // Afficher une boîte de dialogue de progression
+  const progressDiv = document.createElement('div')
+  progressDiv.id = 'import-progress-modal'
+  progressDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+  progressDiv.innerHTML = `
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <h3 class="text-xl font-bold mb-4">
+        <i class="fas fa-spinner fa-spin mr-2 text-blue-600"></i>Import en cours...
+      </h3>
+      <div class="mb-4">
+        <div class="flex justify-between text-sm mb-2">
+          <span>Progression</span>
+          <span id="progress-text">0 / ${totalMissions}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-4">
+          <div id="progress-bar" class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+      <div id="progress-status" class="text-sm text-gray-600">
+        Création des missions en cours...
+      </div>
+    </div>
+  `
+  document.body.appendChild(progressDiv)
+  
+  // Créer chaque mission
+  for (let i = 0; i < importedMissions.length; i++) {
+    const mission = importedMissions[i]
+    const missionNum = i + 1
+    
+    // Mettre à jour la progression
+    document.getElementById('progress-text').textContent = `${missionNum} / ${totalMissions}`
+    document.getElementById('progress-bar').style.width = `${(missionNum / totalMissions) * 100}%`
+    document.getElementById('progress-status').textContent = `Création de la mission ${mission.numero_mission}...`
+    
+    try {
+      // Trouver la brigade par nom exact (priorité) ou nom partiel
+      const brigade = allBrigades.find(b => 
+        b.nom.trim().toLowerCase() === mission.code_brigade.trim().toLowerCase() ||
+        b.code === mission.code_brigade ||
+        b.nom.toLowerCase().includes(mission.code_brigade.toLowerCase())
+      )
+      
+      if (!brigade) {
+        failedCount++
+        errors.push(`Mission ${mission.numero_mission} (ligne ${mission.rowNum}): Brigade "${mission.code_brigade}" introuvable`)
+        continue
+      }
+      
+      // Formater les dates correctement (combiner date + heure)
+      const dateDebut = `${mission.date_debut} ${mission.heure_debut}:00`
+      const dateFin = `${mission.date_fin} ${mission.heure_fin}:00`
+      
+      // Créer la mission via l'API
+      const missionData = {
+        numero_mission: mission.numero_mission,
+        titre: mission.titre,
+        description: mission.description || '',
+        brigade_id: brigade.id,
+        date_debut: dateDebut,
+        date_fin: dateFin,
+        effectifs_requis: mission.effectifs_requis || 1,
+        priorite: mission.priorite || 'normale',
+        competences_requises: mission.competences_requises || ''
+      }
+      
+      await axios.post('/api/missions', missionData)
+      successCount++
+      
+    } catch (error) {
+      failedCount++
+      errors.push(`Mission ${mission.numero_mission} (ligne ${mission.rowNum}): ${error.response?.data?.error || error.message}`)
+      console.error(`Erreur mission ${mission.numero_mission}:`, error)
+    }
+    
+    // Petit délai pour ne pas surcharger l'API
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+  
+  // Supprimer la boîte de progression
+  document.body.removeChild(progressDiv)
+  
+  // Afficher le résumé
+  let message = `✅ Import terminé!\n\n`
+  message += `${successCount} mission(s) créée(s) avec succès\n`
+  if (failedCount > 0) {
+    message += `❌ ${failedCount} échec(s)\n\n`
+    if (errors.length > 0) {
+      message += `Erreurs:\n${errors.slice(0, 5).join('\n')}`
+      if (errors.length > 5) {
+        message += `\n... et ${errors.length - 5} autre(s) erreur(s)`
+      }
+    }
+  }
+  
+  alert(message)
+  
+  // Recharger les données
+  await loadAllData()
+  renderCompagnieCards()
+  
+  // Réinitialiser
+  importedMissions = []
+  currentImportIndex = 0
+}
+
+// ANCIEN CODE - Ne plus utiliser la modale
 async function showNextImportedMission() {
   if (currentImportIndex >= importedMissions.length) {
     // Fin de l'import
