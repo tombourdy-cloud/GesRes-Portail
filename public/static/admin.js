@@ -186,9 +186,14 @@ function renderCompagnieCards() {
   
   container.innerHTML = `
     <div class="mb-6">
-      <button onclick="showNewMissionModal()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 mb-4">
-        <i class="fas fa-plus mr-2"></i>Nouvelle mission
-      </button>
+      <div class="flex flex-wrap gap-3 mb-4">
+        <button onclick="showNewMissionModal()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+          <i class="fas fa-plus mr-2"></i>Nouvelle mission
+        </button>
+        <button onclick="showImportExcelModal()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+          <i class="fas fa-file-excel mr-2"></i>Importer depuis Excel
+        </button>
+      </div>
       <div class="flex items-center gap-2 mb-4">
         <button onclick="resetMissionView()" class="text-sm text-gray-600 hover:text-gray-900">
           <i class="fas fa-home mr-1"></i>Retour aux compagnies
@@ -1082,6 +1087,18 @@ document.addEventListener('DOMContentLoaded', async function() {
       const response = await axios.get('/api/missions')
       allMissions = response.data
       renderCompagnieCards()
+      
+      // Si on est en mode import Excel, afficher la mission suivante
+      if (importedMissions.length > 0 && currentImportIndex < importedMissions.length) {
+        setTimeout(() => {
+          showNextImportedMission()
+        }, 500)  // Petit délai pour que l'utilisateur voie la confirmation
+      } else if (importedMissions.length > 0 && currentImportIndex >= importedMissions.length) {
+        // Fin de l'import
+        alert(`✅ Import Excel terminé!\n\n${importedMissions.length} mission(s) créée(s) avec succès.`)
+        importedMissions = []
+        currentImportIndex = 0
+      }
     } catch (error) {
       console.error('❌ Erreur création mission:', error)
       console.error('❌ Détails:', error.response?.data)
@@ -1572,6 +1589,80 @@ function injectModals() {
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal Import Excel -->
+    <div id="modal-import-excel" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg p-6 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-green-700">
+            <i class="fas fa-file-excel mr-2"></i>Import de missions depuis Excel
+          </h2>
+          <button id="close-modal-import-excel" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+          <p class="text-sm text-gray-700 font-semibold mb-2">
+            <i class="fas fa-info-circle text-blue-500 mr-2"></i>Format Excel attendu :
+          </p>
+          <p class="text-xs text-gray-600">
+            Le fichier sera analysé et chaque ligne remplira automatiquement la modale de création de mission.
+            Vous pourrez valider ou modifier chaque mission avant de l'enregistrer.
+          </p>
+        </div>
+        
+        <!-- Zone de téléchargement -->
+        <div class="mb-6 p-6 border-2 border-dashed border-green-300 rounded-lg bg-green-50">
+          <label class="block text-sm font-semibold mb-2 text-green-900">
+            <i class="fas fa-upload mr-2"></i>Sélectionnez votre fichier Excel
+          </label>
+          <input type="file" id="import-excel-file" accept=".xlsx,.xls"
+                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white">
+          <p class="text-xs text-gray-600 mt-2">
+            <i class="fas fa-info-circle mr-1"></i>Formats acceptés : .xlsx, .xls
+          </p>
+        </div>
+        
+        <!-- Aperçu des données -->
+        <div id="import-excel-preview" class="hidden mb-6">
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-sm font-semibold">
+              <i class="fas fa-eye mr-2"></i>Aperçu des données
+            </label>
+            <span id="import-excel-total" class="text-sm text-gray-600"></span>
+          </div>
+          <div class="overflow-x-auto border rounded-lg">
+            <table id="import-excel-table" class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr id="import-excel-headers"></tr>
+              </thead>
+              <tbody id="import-excel-body" class="bg-white divide-y divide-gray-200"></tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Message d'état -->
+        <div id="import-excel-status" class="hidden mb-6"></div>
+        
+        <!-- Boutons d'action -->
+        <div class="flex justify-between items-center">
+          <button onclick="downloadImportTemplate()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-download mr-2"></i>Télécharger le modèle
+          </button>
+          <div class="flex gap-3">
+            <button onclick="closeImportExcelModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+              Annuler
+            </button>
+            <button onclick="startImportFromExcel()" id="btn-start-import" disabled
+                    class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+              <i class="fas fa-play mr-2"></i>Commencer l'import
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2626,5 +2717,283 @@ function downloadExcelTemplate() {
   
   // Télécharger
   XLSX.writeFile(wb, 'modele_import_missions.xlsx')
+}
+
+// =============================================================================
+// IMPORT EXCEL AVEC REMPLISSAGE MODALE (VERSION 2)
+// =============================================================================
+
+let importedMissions = []
+let currentImportIndex = 0
+
+function showImportExcelModal() {
+  document.getElementById('modal-import-excel').classList.remove('hidden')
+  
+  // Réinitialiser
+  document.getElementById('import-excel-file').value = ''
+  document.getElementById('import-excel-preview').classList.add('hidden')
+  document.getElementById('import-excel-status').classList.add('hidden')
+  document.getElementById('btn-start-import').disabled = true
+  importedMissions = []
+  currentImportIndex = 0
+}
+
+function closeImportExcelModal() {
+  document.getElementById('modal-import-excel').classList.add('hidden')
+}
+
+// Gérer la sélection du fichier Excel
+document.addEventListener('DOMContentLoaded', () => {
+  const fileInput = document.getElementById('import-excel-file')
+  if (fileInput) {
+    fileInput.addEventListener('change', handleImportExcelFileSelect)
+  }
+  
+  // Bouton fermer modale
+  const closeBtn = document.getElementById('close-modal-import-excel')
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeImportExcelModal)
+  }
+})
+
+function handleImportExcelFileSelect(event) {
+  const file = event.target.files[0]
+  if (!file) {
+    importedMissions = []
+    document.getElementById('import-excel-preview').classList.add('hidden')
+    document.getElementById('btn-start-import').disabled = true
+    return
+  }
+
+  const reader = new FileReader()
+  
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result)
+      const workbook = XLSX.read(data, { type: 'array', cellDates: true })
+      
+      // Lire la première feuille
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      
+      // Convertir en JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false })
+      
+      if (jsonData.length === 0) {
+        alert('❌ Le fichier Excel est vide')
+        return
+      }
+      
+      // Parser les missions
+      parseImportedMissions(jsonData)
+      
+    } catch (error) {
+      console.error('Erreur lecture Excel:', error)
+      alert('❌ Erreur lors de la lecture du fichier Excel')
+    }
+  }
+  
+  reader.readAsArrayBuffer(file)
+}
+
+function parseImportedMissions(data) {
+  const hasHeader = typeof data[0][0] === 'string' && !data[0][0].match(/^\d+$/)
+  const startRow = hasHeader ? 1 : 0
+  
+  importedMissions = []
+  const errors = []
+  
+  // Parser chaque ligne
+  for (let i = startRow; i < data.length; i++) {
+    const row = data[i]
+    const rowNum = i + 1
+    
+    // Vérifier que la ligne n'est pas vide
+    if (!row || row.length === 0 || !row[0]) {
+      continue
+    }
+    
+    try {
+      // IMPORTANT: Vous définirez le mapping exact des colonnes
+      // Pour l'instant je prends le format standard
+      const mission = {
+        numero_mission: String(row[0] || '').trim(),
+        date_debut: parseExcelDate(row[1]),
+        date_fin: parseExcelDate(row[2]),
+        description: String(row[3] || '').trim(),
+        titre: String(row[4] || '').trim(),
+        code_brigade: String(row[5] || '').trim(),
+        effectifs_requis: parseInt(row[6]) || 1,
+        priorite: String(row[7] || 'normale').trim().toLowerCase(),
+        competences_requises: String(row[8] || '').trim(),
+        rowNum: rowNum  // Pour affichage
+      }
+      
+      importedMissions.push(mission)
+      
+    } catch (error) {
+      errors.push(`Ligne ${rowNum}: ${error.message}`)
+    }
+  }
+  
+  // Afficher l'aperçu
+  displayImportPreview(data.slice(0, Math.min(6, data.length)))
+  
+  // Afficher le statut
+  const statusDiv = document.getElementById('import-excel-status')
+  if (importedMissions.length > 0) {
+    statusDiv.innerHTML = `
+      <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded">
+        <p class="text-sm text-green-800 font-semibold">
+          <i class="fas fa-check-circle mr-2"></i>${importedMissions.length} mission(s) détectée(s)
+        </p>
+        <p class="text-xs text-green-700 mt-1">
+          Cliquez sur "Commencer l'import" pour traiter les missions une par une.
+        </p>
+      </div>
+    `
+    statusDiv.classList.remove('hidden')
+    document.getElementById('btn-start-import').disabled = false
+  } else {
+    statusDiv.innerHTML = `
+      <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded">
+        <p class="text-sm text-red-800 font-semibold">
+          <i class="fas fa-times-circle mr-2"></i>Aucune mission valide trouvée
+        </p>
+      </div>
+    `
+    statusDiv.classList.remove('hidden')
+    document.getElementById('btn-start-import').disabled = true
+  }
+  
+  document.getElementById('import-excel-total').textContent = `${importedMissions.length} mission(s) à importer`
+}
+
+function displayImportPreview(data) {
+  const headersRow = document.getElementById('import-excel-headers')
+  const bodyTable = document.getElementById('import-excel-body')
+  
+  // Nettoyer
+  headersRow.innerHTML = ''
+  bodyTable.innerHTML = ''
+  
+  // En-têtes
+  const hasHeader = typeof data[0][0] === 'string' && !data[0][0].match(/^\d+$/)
+  const headers = hasHeader ? data[0] : ['N° Mission', 'Date début', 'Date fin', 'Description', 'Titre', 'Code brigade', 'Effectifs', 'Priorité', 'Compétences']
+  
+  headers.forEach((header, idx) => {
+    const th = document.createElement('th')
+    th.className = 'px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+    th.textContent = header || `Colonne ${idx + 1}`
+    headersRow.appendChild(th)
+  })
+  
+  // Lignes (max 5)
+  const startRow = hasHeader ? 1 : 0
+  const endRow = Math.min(startRow + 5, data.length)
+  
+  for (let i = startRow; i < endRow; i++) {
+    const row = data[i]
+    const tr = document.createElement('tr')
+    tr.className = 'hover:bg-gray-50'
+    
+    row.forEach(cell => {
+      const td = document.createElement('td')
+      td.className = 'px-4 py-2 text-xs text-gray-900 whitespace-nowrap'
+      td.textContent = cell || ''
+      tr.appendChild(td)
+    })
+    
+    bodyTable.appendChild(tr)
+  }
+  
+  document.getElementById('import-excel-preview').classList.remove('hidden')
+}
+
+async function startImportFromExcel() {
+  if (importedMissions.length === 0) {
+    alert('❌ Aucune mission à importer')
+    return
+  }
+  
+  currentImportIndex = 0
+  
+  // Fermer la modale d'import
+  closeImportExcelModal()
+  
+  // Afficher la première mission dans la modale de création
+  await showNextImportedMission()
+}
+
+async function showNextImportedMission() {
+  if (currentImportIndex >= importedMissions.length) {
+    // Fin de l'import
+    alert(`✅ Import terminé!\n\n${currentImportIndex} mission(s) traitée(s).`)
+    
+    // Recharger les données
+    await loadAllData()
+    renderCompagnieCards()
+    
+    // Réinitialiser
+    importedMissions = []
+    currentImportIndex = 0
+    return
+  }
+  
+  const mission = importedMissions[currentImportIndex]
+  
+  // Trouver la brigade
+  const brigade = allBrigades.find(b => 
+    b.code === mission.code_brigade || 
+    b.nom.toLowerCase().includes(mission.code_brigade.toLowerCase())
+  )
+  
+  if (!brigade) {
+    const skipConfirm = confirm(
+      `⚠️ Mission ${currentImportIndex + 1}/${importedMissions.length}\n\n` +
+      `Brigade introuvable: ${mission.code_brigade}\n\n` +
+      `Voulez-vous ignorer cette mission et passer à la suivante?`
+    )
+    if (skipConfirm) {
+      currentImportIndex++
+      await showNextImportedMission()
+    }
+    return
+  }
+  
+  // Remplir la modale avec les données
+  document.getElementById('mission-numero').value = mission.numero_mission
+  document.getElementById('mission-titre').value = mission.titre
+  document.getElementById('mission-description').value = mission.description || ''
+  document.getElementById('mission-brigade-id').value = brigade.id
+  document.getElementById('mission-date-debut').value = mission.date_debut ? mission.date_debut.replace(' ', 'T').slice(0, 16) : ''
+  document.getElementById('mission-date-fin').value = mission.date_fin ? mission.date_fin.replace(' ', 'T').slice(0, 16) : ''
+  document.getElementById('mission-effectifs').value = mission.effectifs_requis || 1
+  document.getElementById('mission-priorite').value = mission.priorite || 'normale'
+  document.getElementById('mission-competences').value = mission.competences_requises || ''
+  
+  // Mettre à jour le titre de la modale
+  document.getElementById('modal-mission-title').textContent = `Import Excel - Mission ${currentImportIndex + 1}/${importedMissions.length}`
+  
+  // Afficher la modale
+  document.getElementById('modal-mission').classList.remove('hidden')
+  
+  // IMPORTANT: Incrémenter l'index pour la prochaine mission
+  currentImportIndex++
+}
+
+function downloadImportTemplate() {
+  // Créer un fichier Excel d'exemple
+  const data = [
+    ['Numéro de mission', 'Date début', 'Date fin', 'Description', 'Titre', 'Code brigade', 'Effectifs requis', 'Priorité', 'Compétences'],
+    ['1819992', '13/03/26 15:00:00', '13/03/26 23:00:00', 'Ordre et sécurité publique', 'Renfort PAM', '58577', 2, 'normale', 'PSC1'],
+    ['1827585', '14/03/26 00:30:00', '14/03/26 07:00:00', 'Ordre et sécurité publique', 'Renfort BGE', 'BTA-PERSAN', 1, 'haute', '']
+  ]
+  
+  const ws = XLSX.utils.aoa_to_sheet(data)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Missions')
+  
+  XLSX.writeFile(wb, 'modele_import_missions_gesres.xlsx')
 }
 
