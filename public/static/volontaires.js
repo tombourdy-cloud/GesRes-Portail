@@ -8,9 +8,21 @@ let currentMonth = dayjs()
 // Initialisation
 async function init() {
   await loadData()
+  loadCustomLogo()  // Charger le logo personnalisé
   renderCalendar()
   renderBrigadeFilters()
   renderMissions()
+}
+
+// Charger le logo personnalisé
+function loadCustomLogo() {
+  const savedLogo = localStorage.getItem('customLogo')
+  if (savedLogo) {
+    const logoImg = document.getElementById('nav-logo-volontaires')
+    if (logoImg) {
+      logoImg.src = savedLogo
+    }
+  }
 }
 
 // Charger les données

@@ -95,7 +95,7 @@ app.get('/volontaires', (c) => {
             <div class="container mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <img src="/static/default-logo.png" alt="Logo" class="h-10 w-10 sm:h-12 sm:w-12 object-contain bg-white rounded-lg p-1 shadow-md">
+                        <img id="nav-logo-volontaires" src="/static/default-logo.png" alt="Logo" class="h-10 w-10 sm:h-12 sm:w-12 object-contain bg-white rounded-lg p-1 shadow-md">
                         <div>
                             <h1 class="text-base sm:text-xl font-bold">GesRes - Appels à volontaires</h1>
                             <p class="text-xs text-blue-200">Portail des missions disponibles</p>
