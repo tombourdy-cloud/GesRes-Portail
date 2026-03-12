@@ -234,41 +234,51 @@ app.get('/api/brigades/:id', async (c) => {
 // POST /api/brigades - Créer une brigade
 app.post('/api/brigades', async (c) => {
   const { DB } = c.env
-  const { compagnie_id, nom, code, adresse, telephone, email, effectifs, chef_brigade, latitude, longitude } = await c.req.json()
+  const body = await c.req.json()
   
-  const result = await DB.prepare(`
-    INSERT INTO brigades (compagnie_id, nom, code, adresse, telephone, email, effectifs, chef_brigade, latitude, longitude)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    compagnie_id, 
-    nom, 
-    code, 
-    adresse, 
-    telephone || null, 
-    email || null, 
-    effectifs || 0, 
-    chef_brigade || null, 
-    latitude || null, 
-    longitude || null
-  ).run()
+  const { compagnie_id, nom, code, adresse, telephone, email } = body
   
-  return c.json({ id: result.meta.last_row_id, message: 'Brigade créée' }, 201)
+  try {
+    const result = await DB.prepare(`
+      INSERT INTO brigades (compagnie_id, nom, code, adresse, telephone, email, effectifs, chef_brigade)
+      VALUES (?, ?, ?, ?, ?, ?, 0, NULL)
+    `).bind(
+      compagnie_id, 
+      nom, 
+      code, 
+      adresse, 
+      telephone || null, 
+      email || null
+    ).run()
+    
+    return c.json({ id: result.meta.last_row_id, message: 'Brigade créée' }, 201)
+  } catch (error: any) {
+    console.error('Erreur création brigade:', error)
+    return c.json({ error: 'Erreur lors de la création: ' + error.message }, 500)
+  }
 })
 
 // PUT /api/brigades/:id - Modifier une brigade
 app.put('/api/brigades/:id', async (c) => {
   const { DB } = c.env
   const id = c.req.param('id')
-  const { compagnie_id, nom, code, adresse, telephone, email, effectifs, chef_brigade, latitude, longitude } = await c.req.json()
+  const body = await c.req.json()
   
-  await DB.prepare(`
-    UPDATE brigades 
-    SET compagnie_id = ?, nom = ?, code = ?, adresse = ?, telephone = ?, email = ?, 
-        effectifs = ?, chef_brigade = ?, latitude = ?, longitude = ?
-    WHERE id = ?
-  `).bind(compagnie_id, nom, code, adresse, telephone, email, effectifs, chef_brigade, latitude, longitude, id).run()
+  // Extraire seulement les champs fournis (certains peuvent être optionnels)
+  const { compagnie_id, nom, code, adresse, telephone, email } = body
   
-  return c.json({ message: 'Brigade mise à jour' })
+  try {
+    await DB.prepare(`
+      UPDATE brigades 
+      SET compagnie_id = ?, nom = ?, code = ?, adresse = ?, telephone = ?, email = ?
+      WHERE id = ?
+    `).bind(compagnie_id, nom, code, adresse, telephone, email, id).run()
+    
+    return c.json({ message: 'Brigade mise à jour' })
+  } catch (error: any) {
+    console.error('Erreur modification brigade:', error)
+    return c.json({ error: 'Erreur lors de la modification: ' + error.message }, 500)
+  }
 })
 
 // DELETE /api/brigades/:id - Supprimer une brigade
