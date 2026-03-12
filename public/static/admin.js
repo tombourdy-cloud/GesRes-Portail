@@ -768,7 +768,9 @@ async function deleteMission(missionId) {
 }
 
 async function deleteAllMissions() {
-  const confirmMsg = `⚠️ ATTENTION ⚠️\n\nVous êtes sur le point de supprimer TOUTES les missions.\nCette action est IRRÉVERSIBLE.\n\nNombre total de missions : ${allMissions.length}\n\nÊtes-vous absolument certain de vouloir continuer ?`
+  const totalMissions = allMissions.length
+  
+  const confirmMsg = `⚠️ ATTENTION ⚠️\n\nVous êtes sur le point de supprimer TOUTES les missions.\nCette action est IRRÉVERSIBLE.\n\nNombre total de missions : ${totalMissions}\n\nÊtes-vous absolument certain de vouloir continuer ?`
   
   if (!confirm(confirmMsg)) {
     return
@@ -782,12 +784,67 @@ async function deleteAllMissions() {
     return
   }
   
+  // Afficher une boîte de dialogue de progression
+  const progressDiv = document.createElement('div')
+  progressDiv.id = 'delete-progress-modal'
+  progressDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+  progressDiv.innerHTML = `
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <h3 class="text-xl font-bold mb-4 text-red-600">
+        <i class="fas fa-spinner fa-spin mr-2"></i>Suppression en cours...
+      </h3>
+      <div class="mb-4">
+        <div class="flex justify-between text-sm mb-2">
+          <span>Progression</span>
+          <span id="delete-progress-text">0 / ${totalMissions}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-4">
+          <div id="delete-progress-bar" class="bg-red-600 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+      <div id="delete-progress-status" class="text-sm text-gray-600">
+        Suppression des missions en cours...
+      </div>
+    </div>
+  `
+  document.body.appendChild(progressDiv)
+  
   try {
-    const response = await axios.delete('/api/missions/all')
-    alert(`✅ ${response.data.deleted} mission(s) supprimée(s) avec succès`)
+    // Supprimer les missions une par une pour avoir une progression
+    let deletedCount = 0
+    const missionIds = allMissions.map(m => m.id)
+    
+    for (let i = 0; i < missionIds.length; i++) {
+      const missionId = missionIds[i]
+      const progress = i + 1
+      
+      // Mettre à jour la progression
+      document.getElementById('delete-progress-text').textContent = `${progress} / ${totalMissions}`
+      document.getElementById('delete-progress-bar').style.width = `${(progress / totalMissions) * 100}%`
+      document.getElementById('delete-progress-status').textContent = `Suppression de la mission ${progress}/${totalMissions}...`
+      
+      try {
+        await axios.delete(`/api/missions/${missionId}`)
+        deletedCount++
+      } catch (error) {
+        console.error(`Erreur suppression mission ${missionId}:`, error)
+      }
+      
+      // Petit délai pour ne pas surcharger l'API
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    
+    // Supprimer la boîte de progression
+    document.body.removeChild(progressDiv)
+    
+    alert(`✅ ${deletedCount} mission(s) supprimée(s) avec succès`)
     await loadAllData()
     renderCompagnieCards()
   } catch (error) {
+    // Supprimer la boîte de progression en cas d'erreur
+    if (document.getElementById('delete-progress-modal')) {
+      document.body.removeChild(progressDiv)
+    }
     console.error('Erreur lors de la suppression:', error)
     alert('Erreur lors de la suppression des missions')
   }
