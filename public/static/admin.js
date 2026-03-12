@@ -1668,19 +1668,14 @@ function injectModals() {
         <div id="import-excel-status" class="hidden mb-6"></div>
         
         <!-- Boutons d'action -->
-        <div class="flex justify-between items-center">
-          <button onclick="downloadImportTemplate()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <i class="fas fa-download mr-2"></i>Télécharger le modèle
+        <div class="flex justify-end items-center gap-3">
+          <button onclick="closeImportExcelModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            Annuler
           </button>
-          <div class="flex gap-3">
-            <button onclick="closeImportExcelModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-              Annuler
-            </button>
-            <button onclick="startImportFromExcel()" id="btn-start-import" disabled
-                    class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
-              <i class="fas fa-play mr-2"></i>Commencer l'import
-            </button>
-          </div>
+          <button onclick="startImportFromExcel()" id="btn-start-import" disabled
+                  class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+            <i class="fas fa-play mr-2"></i>Commencer l'import
+          </button>
         </div>
       </div>
     </div>
@@ -2900,6 +2895,42 @@ function parseImportedMissions(data) {
   document.getElementById('import-excel-total').textContent = `${importedMissions.length} mission(s) à importer`
 }
 
+// Fonction pour formater les dates Excel (DD/MM/YY HH:MM ou DD/M/YY HH:MM)
+function formatExcelDate(dateStr, timeStr) {
+  try {
+    // dateStr : format DD/MM/YY ou DD/M/YY
+    // timeStr : format HH:MM
+    
+    // Séparer jour, mois, année
+    const dateParts = dateStr.split('/')
+    if (dateParts.length !== 3) {
+      throw new Error(`Format de date invalide: ${dateStr}`)
+    }
+    
+    let jour = dateParts[0].padStart(2, '0')  // Ajouter 0 si nécessaire
+    let mois = dateParts[1].padStart(2, '0')  // Ajouter 0 si nécessaire
+    let annee = dateParts[2]
+    
+    // Convertir l'année sur 2 chiffres en 4 chiffres (26 → 2026)
+    if (annee.length === 2) {
+      annee = '20' + annee
+    }
+    
+    // Formater la date au format YYYY-MM-DD
+    const dateFormatted = `${annee}-${mois}-${jour}`
+    
+    // Ajouter l'heure (avec :00 pour les secondes si absentes)
+    const timeParts = timeStr.split(':')
+    let heures = timeParts[0].padStart(2, '0')
+    let minutes = timeParts[1] ? timeParts[1].padStart(2, '0') : '00'
+    
+    return `${dateFormatted} ${heures}:${minutes}:00`
+  } catch (error) {
+    console.error('Erreur formatage date:', error)
+    return `${dateStr} ${timeStr}:00`  // Retour par défaut
+  }
+}
+
 function displayImportPreview(data) {
   const headersRow = document.getElementById('import-excel-headers')
   const bodyTable = document.getElementById('import-excel-body')
@@ -3010,8 +3041,9 @@ async function createAllMissionsAutomatically() {
       }
       
       // Formater les dates correctement (combiner date + heure)
-      const dateDebut = `${mission.date_debut} ${mission.heure_debut}:00`
-      const dateFin = `${mission.date_fin} ${mission.heure_fin}:00`
+      // Convertir DD/MM/YY en YYYY-MM-DD
+      const dateDebut = formatExcelDate(mission.date_debut, mission.heure_debut)
+      const dateFin = formatExcelDate(mission.date_fin, mission.heure_fin)
       
       // Créer la mission via l'API
       const missionData = {
