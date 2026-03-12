@@ -730,8 +730,13 @@ function editMission(missionId) {
   document.getElementById('mission-titre').value = mission.titre
   document.getElementById('mission-description').value = mission.description || ''
   document.getElementById('mission-brigade-id').value = mission.brigade_id
-  document.getElementById('mission-date-debut').value = dayjs(mission.date_debut).format('YYYY-MM-DDTHH:mm')
-  document.getElementById('mission-date-fin').value = dayjs(mission.date_fin).format('YYYY-MM-DDTHH:mm')
+  
+  // Séparer date et heure pour les champs
+  document.getElementById('mission-date-debut').value = dayjs(mission.date_debut).format('YYYY-MM-DD')
+  document.getElementById('mission-heure-debut').value = dayjs(mission.date_debut).format('HH:mm')
+  document.getElementById('mission-date-fin').value = dayjs(mission.date_fin).format('YYYY-MM-DD')
+  document.getElementById('mission-heure-fin').value = dayjs(mission.date_fin).format('HH:mm')
+  
   document.getElementById('mission-effectifs').value = mission.effectifs_requis
   document.getElementById('mission-competences').value = mission.competences_requises || ''
   document.getElementById('mission-priorite').value = mission.priorite
@@ -1057,13 +1062,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     e.preventDefault()
     console.log('📝 Formulaire mission soumis')
     
+    // Combiner date + heure
+    const dateDebut = document.getElementById('mission-date-debut').value
+    const heureDebut = document.getElementById('mission-heure-debut').value
+    const dateFin = document.getElementById('mission-date-fin').value
+    const heureFin = document.getElementById('mission-heure-fin').value
+    
     const data = {
       numero_mission: document.getElementById('mission-numero').value,
       titre: document.getElementById('mission-titre').value,
       description: document.getElementById('mission-description').value,
       brigade_id: parseInt(document.getElementById('mission-brigade-id').value),
-      date_debut: document.getElementById('mission-date-debut').value,
-      date_fin: document.getElementById('mission-date-fin').value,
+      date_debut: `${dateDebut} ${heureDebut}:00`,
+      date_fin: `${dateFin} ${heureFin}:00`,
       effectifs_requis: parseInt(document.getElementById('mission-effectifs').value),
       competences_requises: document.getElementById('mission-competences').value,
       priorite: document.getElementById('mission-priorite').value
@@ -1551,12 +1562,22 @@ function injectModals() {
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Date de début *</label>
-              <input type="datetime-local" id="mission-date-debut" required
+              <input type="date" id="mission-date-debut" required
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Heure de début *</label>
+              <input type="time" id="mission-heure-debut" required
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">Date de fin *</label>
-              <input type="datetime-local" id="mission-date-fin" required
+              <input type="date" id="mission-date-fin" required
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Heure de fin *</label>
+              <input type="time" id="mission-heure-fin" required
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
@@ -2814,18 +2835,44 @@ function parseImportedMissions(data) {
     }
     
     try {
-      // IMPORTANT: Vous définirez le mapping exact des colonnes
-      // Pour l'instant je prends le format standard
+      // MAPPING PERSONNALISÉ SELON LE FICHIER EXCEL
+      // Colonne B (index 1) : App. Met. Cont. Loc → Brigade
+      // Colonne AD (index 29) : Numéro mission
+      // Colonne C (index 2) : Date de début
+      // Colonne D (index 3) : Date de fin
+      // Colonne G (index 6) : Lbl Action → Description
+      // Colonne H (index 7) : Objet de la mission → Titre
+      // Colonne J (index 9) : Heure de début
+      // Colonne K (index 10) : Heure de fin
+      // Colonnes V, W, X (index 21, 22, 23) : Nb Officiers + Nb Sous-off + Nb Mili Rang → Effectifs
+      
+      const codeBrigade = String(row[1] || '').trim()  // Colonne B
+      const numeroMission = String(row[29] || '').trim()  // Colonne AD
+      const dateDebut = String(row[2] || '').trim()  // Colonne C
+      const dateFin = String(row[3] || '').trim()  // Colonne D
+      const description = String(row[6] || '').trim()  // Colonne G
+      const titre = String(row[7] || '').trim()  // Colonne H
+      const heureDebut = String(row[9] || '').trim()  // Colonne J
+      const heureFin = String(row[10] || '').trim()  // Colonne K
+      
+      // Calcul des effectifs : somme des colonnes V, W, X
+      const nbOfficiers = parseInt(row[21]) || 0  // Colonne V
+      const nbSousOff = parseInt(row[22]) || 0  // Colonne W
+      const nbMiliRang = parseInt(row[23]) || 0  // Colonne X
+      const effectifsReqis = nbOfficiers + nbSousOff + nbMiliRang
+      
       const mission = {
-        numero_mission: String(row[0] || '').trim(),
-        date_debut: parseExcelDate(row[1]),
-        date_fin: parseExcelDate(row[2]),
-        description: String(row[3] || '').trim(),
-        titre: String(row[4] || '').trim(),
-        code_brigade: String(row[5] || '').trim(),
-        effectifs_requis: parseInt(row[6]) || 1,
-        priorite: String(row[7] || 'normale').trim().toLowerCase(),
-        competences_requises: String(row[8] || '').trim(),
+        numero_mission: numeroMission,
+        code_brigade: codeBrigade,
+        date_debut: dateDebut,
+        date_fin: dateFin,
+        heure_debut: heureDebut,
+        heure_fin: heureFin,
+        description: description,
+        titre: titre,
+        effectifs_requis: effectifsReqis > 0 ? effectifsReqis : 1,
+        priorite: 'normale',  // Pas de colonne priorité dans votre Excel
+        competences_requises: '',  // Pas de colonne compétences dans votre Excel
         rowNum: rowNum  // Pour affichage
       }
       
@@ -2966,8 +3013,13 @@ async function showNextImportedMission() {
   document.getElementById('mission-titre').value = mission.titre
   document.getElementById('mission-description').value = mission.description || ''
   document.getElementById('mission-brigade-id').value = brigade.id
-  document.getElementById('mission-date-debut').value = mission.date_debut ? mission.date_debut.replace(' ', 'T').slice(0, 16) : ''
-  document.getElementById('mission-date-fin').value = mission.date_fin ? mission.date_fin.replace(' ', 'T').slice(0, 16) : ''
+  
+  // Remplir les champs date et heure séparément
+  document.getElementById('mission-date-debut').value = mission.date_debut || ''
+  document.getElementById('mission-heure-debut').value = mission.heure_debut || ''
+  document.getElementById('mission-date-fin').value = mission.date_fin || ''
+  document.getElementById('mission-heure-fin').value = mission.heure_fin || ''
+  
   document.getElementById('mission-effectifs').value = mission.effectifs_requis || 1
   document.getElementById('mission-priorite').value = mission.priorite || 'normale'
   document.getElementById('mission-competences').value = mission.competences_requises || ''
