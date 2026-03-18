@@ -22,7 +22,7 @@ Le fichier doit contenir **3 colonnes obligatoires** :
 | **Nom** ou **Nom d'usage** | Nom de famille | Dupont |
 | **Prénom** | Prénom | Jean |
 
-**Note importante** : Le système reconnaît automatiquement les colonnes nommées "Nom" ou "Nom d'usage" comme le nom de famille du gendarme. Cette flexibilité permet d'importer directement des fichiers Excel provenant de différentes sources sans avoir à renommer les colonnes.
+**Note importante** : Le système reconnaît automatiquement les colonnes nommées "Nom" ou "Nom d'usage" comme le nom de famille du gendarme. La détection est intelligente et exclut automatiquement la colonne "Prénom" même si elle contient le mot "nom". Cette flexibilité permet d'importer directement des fichiers Excel provenant de différentes sources sans avoir à renommer les colonnes.
 
 ### Grades abrégés acceptés
 
