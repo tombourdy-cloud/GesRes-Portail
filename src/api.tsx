@@ -329,7 +329,6 @@ app.get('/api/missions', async (c) => {
           g.nom,
           g.prenom,
           g.grade,
-          g.matricule,
           a.statut
         FROM assignations a
         JOIN gendarmes g ON a.gendarme_id = g.id
@@ -428,11 +427,9 @@ app.get('/api/missions/:id', async (c) => {
   const assignations = await DB.prepare(`
     SELECT 
       a.*,
-      g.matricule,
       g.nom,
       g.prenom,
-      g.grade,
-      g.specialite
+      g.grade
     FROM assignations a
     LEFT JOIN gendarmes g ON a.gendarme_id = g.id
     WHERE a.mission_id = ?
@@ -757,13 +754,9 @@ app.get('/api/assignations/mission/:missionId', async (c) => {
       a.commentaire,
       a.assigned_at,
       a.validated_at,
-      g.matricule as gendarme_matricule,
       g.nom as gendarme_nom,
       g.prenom as gendarme_prenom,
-      g.grade as gendarme_grade,
-      g.specialite as gendarme_specialite,
-      g.telephone as gendarme_telephone,
-      g.email as gendarme_email
+      g.grade as gendarme_grade
     FROM assignations a
     LEFT JOIN gendarmes g ON a.gendarme_id = g.id
     WHERE a.mission_id = ?
