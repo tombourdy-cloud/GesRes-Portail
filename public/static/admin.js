@@ -3495,9 +3495,11 @@ function parseImportedGendarmes(data) {
     headers.forEach((h, i) => {
       const header = String(h).toLowerCase().trim()
       if (header.includes('grade')) gradeCol = i
-      // "Nom d'usage" ou "Nom" correspondent au nom de famille
-      if (header.includes('nom')) nomCol = i
+      // Prénom doit être détecté avant "nom" pour éviter les conflits
       if (header.includes('prénom') || header.includes('prenom')) prenomCol = i
+      // "Nom d'usage" ou "Nom" correspondent au nom de famille
+      // On vérifie que ce n'est pas "prénom"
+      if ((header.includes('nom') || header === 'nom d\'usage') && !header.includes('prénom') && !header.includes('prenom')) nomCol = i
     })
   }
   
