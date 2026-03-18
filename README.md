@@ -26,7 +26,11 @@ Les missions expirées sont automatiquement gérées :
 
 #### Import massif du personnel (gendarmes)
 - **Formats acceptés** : .xlsx, .xls, .ods
-- **Colonnes requises** : Grade (abrégé), Nom, Prénom
+- **Colonnes requises** : Grade (abrégé), Nom ou Nom d'usage, Prénom
+- **Détection intelligente des colonnes** : 
+  - Reconnaissance automatique "Nom" ou "Nom d'usage" pour le nom de famille
+  - Exclusion automatique de "Prénom" même s'il contient "nom"
+  - Ordre de détection optimisé (Prénom → Nom)
 - **Conversion automatique des grades abrégés** :
   - BRI → Brigadier
   - BRC → Brigadier-Chef
@@ -41,10 +45,10 @@ Les missions expirées sont automatiquement gérées :
   - CEN → Commandant
   - LCL → Lieutenant-Colonel
   - COL → Colonel
-- **Détection flexible des colonnes** : Reconnaissance automatique des en-têtes (Grade, Nom, Prénom)
 - **Aperçu avec conversion** : Affichage des grades convertis avant import
 - **Gestion des doublons** : Mise à jour automatique si gendarme existe déjà (par nom/prénom)
-- **Matricule automatique** : Génération automatique si non fourni
+- **Matricule automatique** : Génération automatique (GR0001, GR0002, etc.)
+- **Pas de contrainte unique matricule** : Import sans erreur de duplication
 - **Barre de progression bleue** : Suivi en temps réel de l'import
 - **Feedback détaillé** : Nombre de gendarmes importés et erreurs
 
