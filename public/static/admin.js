@@ -3506,6 +3506,7 @@ function parseImportedGendarmes(data) {
     
     try {
       const gradeAbrege = String(row[gradeCol] || '').trim()
+      // "Nom d'usage" ou "Nom" → nom de famille du gendarme
       const nom = String(row[nomCol] || '').trim()
       const prenom = String(row[prenomCol] || '').trim()
       
@@ -3522,7 +3523,7 @@ function parseImportedGendarmes(data) {
       
       const gendarme = {
         matricule: matricule,
-        nom: nom,
+        nom: nom,  // Nom de famille (vient de "Nom" ou "Nom d'usage")
         prenom: prenom,
         grade: gradeComplet,
         grade_abrege: gradeAbrege,
