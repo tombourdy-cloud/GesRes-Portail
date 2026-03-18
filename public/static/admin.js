@@ -987,7 +987,7 @@ async function viewAssignations(missionId) {
             <div class="flex-1">
               ${a.gendarme_nom ? `
                 <div class="font-medium text-gray-900">${a.gendarme_prenom} ${a.gendarme_nom}</div>
-                <div class="text-sm text-gray-600">${a.gendarme_grade} - ${a.gendarme_matricule}</div>
+                <div class="text-sm text-gray-600">${a.gendarme_grade}</div>
               ` : `
                 <div class="text-gray-500 italic">Place disponible</div>
               `}
@@ -997,13 +997,19 @@ async function viewAssignations(missionId) {
             </div>
             <div class="flex gap-2 items-center">
               ${a.statut === 'libre' ? `
-                <select id="gendarme-select-${a.id}" class="text-sm border rounded px-2 py-1">
-                  <option value="">Choisir un gendarme...</option>
-                  ${allGendarmes.map(g => `<option value="${g.id}">${g.prenom} ${g.nom} (${g.matricule})</option>`).join('')}
-                </select>
-                <button onclick="confirmAssign(${a.id}, ${missionId})" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" title="Assigner">
-                  <i class="fas fa-check"></i> Assigner
-                </button>
+                <div class="flex flex-col gap-2">
+                  <input type="text" 
+                         id="gendarme-search-${a.id}" 
+                         placeholder="Rechercher un gendarme..." 
+                         class="text-sm border rounded px-2 py-1 w-64"
+                         oninput="filterGendarmesForAssignation(${a.id})">
+                  <select id="gendarme-select-${a.id}" class="text-sm border rounded px-2 py-1 w-64" size="5">
+                    ${allGendarmes.map(g => `<option value="${g.id}">${g.prenom} ${g.nom} - ${g.grade}</option>`).join('')}
+                  </select>
+                  <button onclick="confirmAssign(${a.id}, ${missionId})" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" title="Assigner">
+                    <i class="fas fa-check"></i> Assigner
+                  </button>
+                </div>
               ` : ''}
               ${a.statut === 'en_attente' ? `
                 <button onclick="modifyAssignation(${a.id}, ${missionId})" class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm" title="Modifier le gendarme">
@@ -1053,13 +1059,9 @@ function searchGendarme() {
     filteredGendarmes = allGendarmes
   } else {
     filteredGendarmes = allGendarmes.filter(g => 
-      g.matricule.toLowerCase().includes(searchTerm) ||
       g.nom.toLowerCase().includes(searchTerm) ||
       g.prenom.toLowerCase().includes(searchTerm) ||
-      g.grade.toLowerCase().includes(searchTerm) ||
-      (g.specialite && g.specialite.toLowerCase().includes(searchTerm)) ||
-      (g.telephone && g.telephone.includes(searchTerm)) ||
-      (g.email && g.email.toLowerCase().includes(searchTerm))
+      g.grade.toLowerCase().includes(searchTerm)
     )
   }
   
@@ -1553,11 +1555,15 @@ async function modifyAssignation(assignationId, missionId) {
         </div>
         <p class="mb-4 text-gray-600">Gendarme actuel : <strong>${assignation.gendarme_nom || 'Aucun'} ${assignation.gendarme_prenom || ''}</strong></p>
         <label class="block mb-2 font-semibold">Nouveau gendarme :</label>
-        <select id="select-new-gendarme" class="w-full border p-2 rounded mb-4">
-          <option value="">-- Choisir --</option>
+        <input type="text" 
+               id="modify-gendarme-search" 
+               placeholder="Rechercher un gendarme..." 
+               class="w-full border p-2 rounded mb-2"
+               oninput="filterModifyGendarmes()">
+        <select id="select-new-gendarme" class="w-full border p-2 rounded mb-4" size="8">
           ${allGendarmes.map(g => `
             <option value="${g.id}" ${g.id === assignation.gendarme_id ? 'selected' : ''}>
-              ${g.matricule} - ${g.nom} ${g.prenom} (${g.grade})
+              ${g.nom} ${g.prenom} - ${g.grade}
             </option>
           `).join('')}
         </select>
@@ -1607,6 +1613,64 @@ async function confirmModifyAssignation(assignationId, missionId) {
     alert('✅ Gendarme modifié avec succès')
   } catch (error) {
     alert('❌ Erreur : ' + error.message)
+  }
+}
+
+// Filtrer les gendarmes dans le modal de modification d'assignation
+function filterModifyGendarmes() {
+  const searchInput = document.getElementById('modify-gendarme-search')
+  const select = document.getElementById('select-new-gendarme')
+  
+  if (!searchInput || !select) return
+  
+  const searchTerm = searchInput.value.toLowerCase().trim()
+  
+  // Réinitialiser toutes les options
+  Array.from(select.options).forEach(option => {
+    option.style.display = 'block'
+  })
+  
+  if (searchTerm) {
+    // Filtrer les options
+    Array.from(select.options).forEach(option => {
+      const text = option.textContent.toLowerCase()
+      if (!text.includes(searchTerm)) {
+        option.style.display = 'none'
+      }
+    })
+  }
+}
+
+// Filtrer les gendarmes pour l'assignation
+function filterGendarmesForAssignation(assignationId) {
+  const searchInput = document.getElementById(`gendarme-search-${assignationId}`)
+  const select = document.getElementById(`gendarme-select-${assignationId}`)
+  
+  if (!searchInput || !select) return
+  
+  const searchTerm = searchInput.value.toLowerCase().trim()
+  
+  // Reconstruire la liste filtrée
+  if (!searchTerm) {
+    // Afficher tous les gendarmes
+    select.innerHTML = allGendarmes.map(g => 
+      `<option value="${g.id}">${g.prenom} ${g.nom} - ${g.grade}</option>`
+    ).join('')
+  } else {
+    // Filtrer par nom, prénom ou grade
+    const filtered = allGendarmes.filter(g => 
+      g.nom.toLowerCase().includes(searchTerm) ||
+      g.prenom.toLowerCase().includes(searchTerm) ||
+      g.grade.toLowerCase().includes(searchTerm)
+    )
+    
+    if (filtered.length === 0) {
+      select.innerHTML = '<option value="">Aucun gendarme trouvé</option>'
+    } else {
+      select.innerHTML = filtered.map(g => 
+        `<option value="${g.id}">${g.prenom} ${g.nom} - ${g.grade}</option>`
+      ).join('')
+    }
   }
 }
 
@@ -3419,6 +3483,7 @@ function parseImportedGendarmes(data) {
     headers.forEach((h, i) => {
       const header = String(h).toLowerCase().trim()
       if (header.includes('grade')) gradeCol = i
+      // "Nom d'usage" ou "Nom" correspondent au nom de famille
       if (header.includes('nom')) nomCol = i
       if (header.includes('prénom') || header.includes('prenom')) prenomCol = i
     })
