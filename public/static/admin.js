@@ -1139,6 +1139,17 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (importCloseBtn) {
     importCloseBtn.addEventListener('click', closeImportExcelModal)
   }
+  
+  // Attacher l'événement pour l'import Gendarmes Excel
+  const importGendarmesFileInput = document.getElementById('import-gendarmes-file')
+  if (importGendarmesFileInput) {
+    importGendarmesFileInput.addEventListener('change', handleImportGendarmesFileSelect)
+  }
+  const importGendarmesCloseBtn = document.getElementById('close-modal-import-gendarmes')
+  if (importGendarmesCloseBtn) {
+    importGendarmesCloseBtn.addEventListener('click', closeImportGendarmesModal)
+  }
+  
   document.getElementById('close-modal-gendarme').addEventListener('click', () => {
     document.getElementById('modal-gendarme').classList.add('hidden')
   })
@@ -1952,6 +1963,68 @@ function injectModals() {
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal Import Gendarmes Excel -->
+    <div id="modal-import-gendarmes" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg p-6 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-green-700">
+            <i class="fas fa-file-excel mr-2"></i>Import de gendarmes depuis Excel
+          </h2>
+          <button id="close-modal-import-gendarmes" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+          <p class="text-sm text-gray-700 font-semibold mb-2">
+            <i class="fas fa-info-circle text-blue-500 mr-2"></i>Format Excel attendu :
+          </p>
+          <p class="text-xs text-gray-600">
+            Colonnes requises : <strong>Grade</strong> (abréviation), <strong>Nom</strong>, <strong>Prénom</strong>
+          </p>
+        </div>
+        
+        <!-- Zone de sélection -->
+        <div class="mb-6 p-6 border-2 border-dashed border-green-300 rounded-lg bg-green-50">
+          <label class="block text-sm font-semibold mb-2 text-green-900">
+            <i class="fas fa-upload mr-2"></i>Sélectionnez votre fichier Excel ou ODS
+          </label>
+          <input type="file" id="import-gendarmes-file" accept=".xlsx,.xls,.ods"
+                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white">
+          <p class="text-xs text-gray-600 mt-2">
+            Formats acceptés : .xlsx, .xls, .ods
+          </p>
+        </div>
+        
+        <!-- Tableau aperçu -->
+        <div id="gendarmes-preview-container" class="hidden mb-6">
+          <h3 class="font-semibold mb-2">Aperçu (5 premières lignes)</h3>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border">
+              <thead id="import-gendarmes-headers"></thead>
+              <tbody id="import-gendarmes-body"></tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Message d'état -->
+        <div id="import-gendarmes-status" class="hidden mb-6"></div>
+        <div id="import-gendarmes-total" class="text-sm text-gray-600 mb-4"></div>
+        
+        <!-- Boutons d'action -->
+        <div class="flex justify-end items-center gap-3">
+          <button onclick="closeImportGendarmesModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            Annuler
+          </button>
+          <button onclick="startImportGendarmes()" id="btn-start-import-gendarmes" disabled
+                  class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+            <i class="fas fa-play mr-2"></i>Commencer l'import
+          </button>
+        </div>
       </div>
     </div>
 
@@ -3272,5 +3345,346 @@ function downloadImportTemplate() {
   XLSX.utils.book_append_sheet(wb, ws, 'Missions')
   
   XLSX.writeFile(wb, 'modele_import_missions_gesres.xlsx')
+}
+
+// ==================== IMPORT GENDARMES EXCEL ====================
+
+// Variable pour stocker les gendarmes importés
+let importedGendarmes = []
+
+// Fonction de conversion des grades abrégés vers grades complets
+function convertGradeAbrege(abrege) {
+  const gradeMap = {
+    'BRI': 'Brigadier',
+    'BRC': 'Brigadier-Chef',
+    'MDL': 'Maréchal-des-logis',
+    'GND': 'Gendarme',
+    'MDC': 'Maréchal-des-logis-Chef',
+    'ADJ': 'Adjudant',
+    'ADC': 'Adjudant-Chef',
+    'MAJ': 'Major',
+    'LTN': 'Lieutenant',
+    'CNE': 'Capitaine',
+    'CEN': 'Commandant',
+    'LCL': 'Lieutenant-Colonel',
+    'COL': 'Colonel'
+  }
+  
+  const gradeUpperCase = String(abrege).trim().toUpperCase()
+  return gradeMap[gradeUpperCase] || abrege
+}
+
+function showImportGendarmesModal() {
+  document.getElementById('modal-import-gendarmes').classList.remove('hidden')
+  
+  // Réinitialiser
+  document.getElementById('import-gendarmes-file').value = ''
+  document.getElementById('gendarmes-preview-container').classList.add('hidden')
+  document.getElementById('import-gendarmes-status').classList.add('hidden')
+  document.getElementById('btn-start-import-gendarmes').disabled = true
+  importedGendarmes = []
+}
+
+function closeImportGendarmesModal() {
+  document.getElementById('modal-import-gendarmes').classList.add('hidden')
+}
+
+function handleImportGendarmesFileSelect(event) {
+  const file = event.target.files[0]
+  if (!file) {
+    importedGendarmes = []
+    document.getElementById('gendarmes-preview-container').classList.add('hidden')
+    document.getElementById('btn-start-import-gendarmes').disabled = true
+    return
+  }
+
+  const reader = new FileReader()
+  
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result)
+      const workbook = XLSX.read(data, { type: 'array', cellDates: true })
+      
+      // Lire la première feuille
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      
+      // Convertir en JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false })
+      
+      if (jsonData.length === 0) {
+        alert('❌ Le fichier Excel est vide')
+        return
+      }
+      
+      // Parser les gendarmes
+      parseImportedGendarmes(jsonData)
+      
+    } catch (error) {
+      console.error('Erreur lecture Excel:', error)
+      alert('❌ Erreur lors de la lecture du fichier Excel')
+    }
+  }
+  
+  reader.readAsArrayBuffer(file)
+}
+
+function parseImportedGendarmes(data) {
+  // Vérifier si la première ligne contient des en-têtes
+  const hasHeader = typeof data[0][0] === 'string' && !data[0][0].match(/^\d+$/)
+  const startRow = hasHeader ? 1 : 0
+  
+  importedGendarmes = []
+  const errors = []
+  
+  // Détecter les colonnes (flexible)
+  let gradeCol = -1
+  let nomCol = -1
+  let prenomCol = -1
+  
+  if (hasHeader) {
+    const headers = data[0]
+    headers.forEach((h, i) => {
+      const header = String(h).toLowerCase().trim()
+      if (header.includes('grade')) gradeCol = i
+      if (header.includes('nom')) nomCol = i
+      if (header.includes('prénom') || header.includes('prenom')) prenomCol = i
+    })
+  }
+  
+  // Si pas d'en-têtes détectés, utiliser ordre par défaut : Grade, Nom, Prénom
+  if (gradeCol === -1) gradeCol = 0
+  if (nomCol === -1) nomCol = 1
+  if (prenomCol === -1) prenomCol = 2
+  
+  // Parser chaque ligne
+  for (let i = startRow; i < data.length; i++) {
+    const row = data[i]
+    const rowNum = i + 1
+    
+    // Vérifier que la ligne n'est pas vide
+    if (!row || row.length === 0 || !row[gradeCol]) {
+      continue
+    }
+    
+    try {
+      const gradeAbrege = String(row[gradeCol] || '').trim()
+      const nom = String(row[nomCol] || '').trim()
+      const prenom = String(row[prenomCol] || '').trim()
+      
+      if (!gradeAbrege || !nom || !prenom) {
+        errors.push(`Ligne ${rowNum}: Champs obligatoires manquants`)
+        continue
+      }
+      
+      // Convertir le grade abrégé
+      const gradeComplet = convertGradeAbrege(gradeAbrege)
+      
+      // Générer un matricule automatique si nécessaire
+      const matricule = `GR${String(i).padStart(4, '0')}`
+      
+      const gendarme = {
+        matricule: matricule,
+        nom: nom,
+        prenom: prenom,
+        grade: gradeComplet,
+        grade_abrege: gradeAbrege,
+        specialite: '',
+        telephone: '',
+        email: '',
+        rowNum: rowNum
+      }
+      
+      importedGendarmes.push(gendarme)
+      
+    } catch (error) {
+      errors.push(`Ligne ${rowNum}: ${error.message}`)
+    }
+  }
+  
+  // Afficher l'aperçu
+  displayGendarmesPreview(data.slice(0, Math.min(6, data.length)), gradeCol, nomCol, prenomCol)
+  
+  // Afficher le statut
+  const statusDiv = document.getElementById('import-gendarmes-status')
+  const totalDiv = document.getElementById('import-gendarmes-total')
+  
+  if (importedGendarmes.length > 0) {
+    statusDiv.innerHTML = `
+      <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded">
+        <p class="text-sm text-green-800 font-semibold">
+          <i class="fas fa-check-circle mr-2"></i>${importedGendarmes.length} gendarme(s) détecté(s)
+        </p>
+        <p class="text-xs text-green-700 mt-1">
+          Cliquez sur "Commencer l'import" pour importer tous les gendarmes.
+        </p>
+      </div>
+    `
+    statusDiv.classList.remove('hidden')
+    totalDiv.textContent = `Total : ${importedGendarmes.length} gendarme(s)`
+    document.getElementById('btn-start-import-gendarmes').disabled = false
+  } else {
+    statusDiv.innerHTML = `
+      <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded">
+        <p class="text-sm text-red-800 font-semibold">
+          <i class="fas fa-times-circle mr-2"></i>Aucun gendarme valide trouvé
+        </p>
+        ${errors.length > 0 ? `<p class="text-xs text-red-700 mt-2">${errors.join('<br>')}</p>` : ''}
+      </div>
+    `
+    statusDiv.classList.remove('hidden')
+    document.getElementById('btn-start-import-gendarmes').disabled = true
+  }
+}
+
+function displayGendarmesPreview(data, gradeCol, nomCol, prenomCol) {
+  const container = document.getElementById('gendarmes-preview-container')
+  const headers = document.getElementById('import-gendarmes-headers')
+  const body = document.getElementById('import-gendarmes-body')
+  
+  headers.innerHTML = ''
+  body.innerHTML = ''
+  
+  if (data.length === 0) return
+  
+  // En-têtes
+  const headerRow = data[0]
+  headers.innerHTML = `
+    <tr class="bg-gray-100">
+      ${headerRow.map((h, i) => {
+        let label = h || `Colonne ${i + 1}`
+        if (i === gradeCol) label += ' ✅'
+        if (i === nomCol) label += ' ✅'
+        if (i === prenomCol) label += ' ✅'
+        return `<th class="border px-4 py-2">${label}</th>`
+      }).join('')}
+    </tr>
+  `
+  
+  // Lignes de données (5 premières)
+  for (let i = 1; i < Math.min(6, data.length); i++) {
+    const row = data[i]
+    body.innerHTML += `
+      <tr>
+        ${row.map((cell, colIdx) => {
+          let cellContent = cell || ''
+          // Montrer la conversion du grade
+          if (colIdx === gradeCol && cell) {
+            const gradeComplet = convertGradeAbrege(cell)
+            cellContent = `${cell} → <strong>${gradeComplet}</strong>`
+          }
+          return `<td class="border px-4 py-2">${cellContent}</td>`
+        }).join('')}
+      </tr>
+    `
+  }
+  
+  container.classList.remove('hidden')
+}
+
+async function startImportGendarmes() {
+  if (importedGendarmes.length === 0) {
+    alert('❌ Aucun gendarme à importer')
+    return
+  }
+  
+  // Fermer le modal
+  closeImportGendarmesModal()
+  
+  // Créer une barre de progression
+  const progressDiv = document.createElement('div')
+  progressDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+  progressDiv.innerHTML = `
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <h3 class="text-xl font-bold mb-4 text-center">Import des gendarmes en cours...</h3>
+      <div class="mb-4">
+        <div id="gendarmes-progress-bar" class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+          <div class="bg-blue-600 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p id="gendarmes-progress-text" class="text-center mt-2 text-gray-600">0 / ${importedGendarmes.length}</p>
+      </div>
+      <p id="gendarmes-progress-status" class="text-sm text-gray-600 text-center"></p>
+    </div>
+  `
+  document.body.appendChild(progressDiv)
+  
+  let successCount = 0
+  let failedCount = 0
+  const errors = []
+  
+  // Importer chaque gendarme
+  for (let i = 0; i < importedGendarmes.length; i++) {
+    const gendarme = importedGendarmes[i]
+    
+    // Mettre à jour la barre de progression
+    const progress = ((i + 1) / importedGendarmes.length) * 100
+    progressDiv.querySelector('#gendarmes-progress-bar > div').style.width = `${progress}%`
+    progressDiv.querySelector('#gendarmes-progress-text').textContent = `${i + 1} / ${importedGendarmes.length}`
+    progressDiv.querySelector('#gendarmes-progress-status').textContent = `Import ${gendarme.nom} ${gendarme.prenom}...`
+    
+    try {
+      // Vérifier si le gendarme existe déjà (par nom/prénom)
+      const existingGendarme = allGendarmes.find(g => 
+        g.nom.toLowerCase() === gendarme.nom.toLowerCase() && 
+        g.prenom.toLowerCase() === gendarme.prenom.toLowerCase()
+      )
+      
+      const gendarmeData = {
+        matricule: existingGendarme ? existingGendarme.matricule : gendarme.matricule,
+        nom: gendarme.nom,
+        prenom: gendarme.prenom,
+        grade: gendarme.grade,
+        specialite: gendarme.specialite || '',
+        telephone: gendarme.telephone || '',
+        email: gendarme.email || ''
+      }
+      
+      if (existingGendarme) {
+        // Mettre à jour
+        progressDiv.querySelector('#gendarmes-progress-status').textContent = `Mise à jour ${gendarme.nom} ${gendarme.prenom}...`
+        await axios.put(`/api/gendarmes/${existingGendarme.id}`, gendarmeData)
+      } else {
+        // Créer
+        await axios.post('/api/gendarmes', gendarmeData)
+      }
+      
+      successCount++
+      
+    } catch (error) {
+      failedCount++
+      errors.push(`${gendarme.nom} ${gendarme.prenom} (ligne ${gendarme.rowNum}): ${error.response?.data?.error || error.message}`)
+      console.error(`Erreur gendarme ${gendarme.nom}:`, error)
+    }
+    
+    // Petit délai
+    await new Promise(resolve => setTimeout(resolve, 50))
+  }
+  
+  // Supprimer la boîte de progression
+  document.body.removeChild(progressDiv)
+  
+  // Afficher le résumé
+  let message = `✅ Import terminé!\n\n`
+  message += `${successCount} gendarme(s) importé(s) avec succès\n`
+  if (failedCount > 0) {
+    message += `❌ ${failedCount} échec(s)\n\n`
+    if (errors.length > 0) {
+      message += `Erreurs:\n${errors.slice(0, 5).join('\n')}`
+      if (errors.length > 5) {
+        message += `\n... et ${errors.length - 5} autre(s) erreur(s)`
+      }
+    }
+  }
+  
+  alert(message)
+  
+  // Recharger les gendarmes
+  const response = await axios.get('/api/gendarmes')
+  allGendarmes = response.data
+  filteredGendarmes = allGendarmes
+  renderAdminGendarmes(filteredGendarmes)
+  
+  // Réinitialiser
+  importedGendarmes = []
 }
 

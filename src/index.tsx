@@ -251,7 +251,7 @@ app.get('/admin', (c) => {
                 <div class="flex border-b min-w-max">
                     <button onclick="switchTab('missions')" id="tab-missions" 
                             class="tab-btn px-3 sm:px-6 py-2 sm:py-3 font-medium text-blue-600 border-b-2 border-blue-600 text-sm sm:text-base whitespace-nowrap">
-                        <i class="fas fa-clipboard-list mr-1 sm:mr-2"></i><span class="hidden sm:inline">Missions</span><span class="sm:hidden">Miss.</span>
+                        <i class="fas fa-clipboard-list mr-1 sm:mr-2"></i><span class="hidden sm:inline">Appels à volontaires</span><span class="sm:hidden">Missions</span>
                     </button>
                     <button onclick="switchTab('lieux')" id="tab-lieux" 
                             class="tab-btn px-3 sm:px-6 py-2 sm:py-3 font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent text-sm sm:text-base whitespace-nowrap">
@@ -286,6 +286,9 @@ app.get('/admin', (c) => {
                         </div>
                         <button onclick="showNewGendarmeModal()" class="px-4 sm:px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 whitespace-nowrap text-sm sm:text-base">
                             <i class="fas fa-plus mr-2"></i>Nouveau gendarme
+                        </button>
+                        <button onclick="showImportGendarmesModal()" class="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 whitespace-nowrap text-sm sm:text-base">
+                            <i class="fas fa-file-excel mr-2"></i>Importer Excel
                         </button>
                     </div>
                 </div>
