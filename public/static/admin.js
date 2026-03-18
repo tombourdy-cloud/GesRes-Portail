@@ -1307,19 +1307,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     e.preventDefault()
     console.log('📝 Formulaire gendarme soumis')
     
-    // Générer un matricule automatique pour la création
-    const matricule = editingGendarmeId ? 
-      allGendarmes.find(g => g.id === editingGendarmeId).matricule : 
-      `GR${String(allGendarmes.length + 1).padStart(4, '0')}`
-    
     const data = {
-      matricule: matricule,
       nom: document.getElementById('gendarme-nom').value,
       prenom: document.getElementById('gendarme-prenom').value,
-      grade: document.getElementById('gendarme-grade').value,
-      specialite: '',
-      telephone: '',
-      email: ''
+      grade: document.getElementById('gendarme-grade').value
     }
     
     console.log('📦 Données gendarme:', data)
@@ -3682,13 +3673,9 @@ async function startImportGendarmes() {
       )
       
       const gendarmeData = {
-        matricule: existingGendarme ? existingGendarme.matricule : gendarme.matricule,
         nom: gendarme.nom,
         prenom: gendarme.prenom,
-        grade: gendarme.grade,
-        specialite: gendarme.specialite || '',
-        telephone: gendarme.telephone || '',
-        email: gendarme.email || ''
+        grade: gendarme.grade
       }
       
       if (existingGendarme) {

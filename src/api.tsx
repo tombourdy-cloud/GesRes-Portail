@@ -678,12 +678,12 @@ app.post('/api/gendarmes', async (c) => {
   
   try {
     const body = await c.req.json()
-    const { matricule, nom, prenom, grade, specialite, telephone, email } = body
+    const { nom, prenom, grade } = body
     
     const result = await DB.prepare(`
-      INSERT INTO gendarmes (matricule, nom, prenom, grade, specialite, telephone, email)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).bind(matricule, nom, prenom, grade, specialite || null, telephone || null, email || null).run()
+      INSERT INTO gendarmes (nom, prenom, grade)
+      VALUES (?, ?, ?)
+    `).bind(nom, prenom, grade).run()
     
     return c.json({ id: result.meta.last_row_id, message: 'Gendarme créé avec succès' }, 201)
   } catch (error) {
@@ -698,14 +698,13 @@ app.put('/api/gendarmes/:id', async (c) => {
   const id = c.req.param('id')
   const body = await c.req.json()
   
-  const { matricule, nom, prenom, grade, specialite, telephone, email, disponible } = body
+  const { nom, prenom, grade, disponible } = body
   
   await DB.prepare(`
     UPDATE gendarmes 
-    SET matricule = ?, nom = ?, prenom = ?, grade = ?, specialite = ?, 
-        telephone = ?, email = ?, disponible = ?
+    SET nom = ?, prenom = ?, grade = ?, disponible = COALESCE(?, disponible)
     WHERE id = ?
-  `).bind(matricule, nom, prenom, grade, specialite, telephone, email, disponible, id).run()
+  `).bind(nom, prenom, grade, disponible, id).run()
   
   return c.json({ message: 'Gendarme mis à jour avec succès' })
 })
