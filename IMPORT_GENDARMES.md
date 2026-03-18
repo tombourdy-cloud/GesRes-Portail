@@ -90,9 +90,9 @@ Vérifiez que :
 2. Une barre de progression bleue s'affiche en temps réel
 3. Le système :
    - Vérifie si chaque gendarme existe déjà (par nom + prénom)
-   - **Met à jour** le gendarme s'il existe (mise à jour du grade et autres infos)
+   - **Met à jour** le gendarme s'il existe (mise à jour du grade uniquement)
    - **Crée** un nouveau gendarme s'il n'existe pas
-   - Génère automatiquement un matricule unique (ex: GR0001, GR0002, etc.)
+   - **Note** : Les champs matricule, spécialité et contact ont été supprimés (migration v3.12)
 
 ### Étape 4 : Résultats
 
@@ -108,14 +108,35 @@ Le système gère intelligemment les doublons :
 
 - **Critère de détection** : Nom + Prénom (insensible à la casse)
 - **Action si doublon** : Le gendarme existant est **mis à jour** avec les nouvelles informations
-- **Matricule préservé** : Si le gendarme existe déjà, son matricule reste inchangé
+- **Données mises à jour** : Nom, Prénom, Grade
 
 Exemple :
 ```
 Fichier Excel : BRI, Dupont, Jean
-Base existante : Gendarme "Jean DUPONT" (matricule GR0042, grade ADJ)
-Résultat : Matricule GR0042 conservé, grade mis à jour vers Brigadier
+Base existante : Gendarme "Jean DUPONT" (grade ADJ)
+Résultat : Grade mis à jour vers Brigadier
 ```
+
+## Structure de données simplifiée (v3.12)
+
+La table `gendarmes` contient uniquement les champs essentiels :
+
+| Champ | Type | Description |
+|-------|------|-------------|
+| **id** | INTEGER | Identifiant unique (auto-incrémenté) |
+| **nom** | TEXT | Nom de famille (requis) |
+| **prenom** | TEXT | Prénom (requis) |
+| **grade** | TEXT | Grade complet (requis) |
+| **disponible** | INTEGER | Disponibilité (0/1, défaut: 1) |
+| **created_at** | DATETIME | Date de création |
+
+**Champs supprimés** : matricule, specialite, telephone, email
+
+**Avantages** :
+- ✅ Plus d'erreur "Unique constraint failed: gendarmes.matricule"
+- ✅ Import plus rapide et fiable
+- ✅ Structure simplifiée et performante
+- ✅ Focus sur les données essentielles
 
 ## Génération automatique des matricules
 
