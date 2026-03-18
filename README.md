@@ -12,16 +12,41 @@ Les missions expirées sont automatiquement gérées :
 - **Cascade** : Les assignations liées sont supprimées automatiquement
 - **Manuel** : Bouton de nettoyage dans l'onglet Paramètres (admin)
 
-### 📊 **NOUVEAU : Import Excel v7.0**
-Import massif de missions depuis fichiers Excel :
-- **Formats acceptés** : .xlsx, .xls
+### 📊 **NOUVEAU : Import Excel v8.0**
+
+#### Import massif de missions
+- **Formats acceptés** : .xlsx, .xls, .ods
 - **Colonnes obligatoires** : N° mission, dates début/fin, description, titre, code brigade
 - **Colonnes optionnelles** : Effectifs requis, priorité, compétences
+- **Écrasement automatique** : Les missions existantes avec le même numéro sont mises à jour
 - **Validation automatique** : Vérification des brigades et formats de dates
 - **Aperçu avant import** : Affichage des 5 premières lignes
-- **Modèle téléchargeable** : Template Excel fourni
+- **Barre de progression** : Suivi en temps réel de l'import
 - **Feedback détaillé** : Succès, échecs et erreurs affichés
-- **Guide complet** : Voir `GUIDE_IMPORT_EXCEL.md`
+
+#### Import massif du personnel (gendarmes)
+- **Formats acceptés** : .xlsx, .xls, .ods
+- **Colonnes requises** : Grade (abrégé), Nom, Prénom
+- **Conversion automatique des grades abrégés** :
+  - BRI → Brigadier
+  - BRC → Brigadier-Chef
+  - MDL → Maréchal-des-logis
+  - GND → Gendarme
+  - MDC → Maréchal-des-logis-Chef
+  - ADJ → Adjudant
+  - ADC → Adjudant-Chef
+  - MAJ → Major
+  - LTN → Lieutenant
+  - CNE → Capitaine
+  - CEN → Commandant
+  - LCL → Lieutenant-Colonel
+  - COL → Colonel
+- **Détection flexible des colonnes** : Reconnaissance automatique des en-têtes (Grade, Nom, Prénom)
+- **Aperçu avec conversion** : Affichage des grades convertis avant import
+- **Gestion des doublons** : Mise à jour automatique si gendarme existe déjà (par nom/prénom)
+- **Matricule automatique** : Génération automatique si non fourni
+- **Barre de progression bleue** : Suivi en temps réel de l'import
+- **Feedback détaillé** : Nombre de gendarmes importés et erreurs
 
 ### 📱 **Version Mobile/Tablette v5.0**
 L'application est maintenant **100% responsive** et optimisée pour tous les appareils :
@@ -158,6 +183,12 @@ L'application est maintenant **100% responsive** et optimisée pour tous les app
   - Actions : voir assignations, éditer, supprimer
 
 #### 👮 Gestion des Gendarmes
+- **Import Excel massif** : Bouton "Importer Excel" pour import depuis fichier
+  - Colonnes : Grade (abrégé), Nom, Prénom
+  - Conversion automatique des grades abrégés (BRI→Brigadier, MDL→Maréchal-des-logis, etc.)
+  - Aperçu avec conversion avant import
+  - Barre de progression en temps réel
+  - Gestion des doublons (mise à jour automatique)
 - **Barre de recherche** en temps réel permettant de filtrer par :
   - Matricule
   - Nom ou prénom
@@ -166,7 +197,7 @@ L'application est maintenant **100% responsive** et optimisée pour tous les app
   - Téléphone ou email
 - **Liste complète** avec matricule, nom, grade, spécialité, contact
 - **Badge** indiquant le nombre de missions actives
-- **Création** de nouveaux gendarmes avec :
+- **Création manuelle** de nouveaux gendarmes avec :
   - **Grades officiels** (liste déroulante, dans l'ordre hiérarchique) :
     - Brigadier
     - Brigadier-Chef
@@ -183,8 +214,12 @@ L'application est maintenant **100% responsive** et optimisée pour tous les app
     - Lieutenant-Colonel
     - Colonel
     - Général
-- **Modification** de gendarmes existants via bouton "Modifier"
+- **Modification manuelle** de gendarmes existants via bouton "Modifier"
+  - Possibilité de modifier tous les champs (matricule, nom, prénom, grade, spécialité, contact)
+  - Formulaire pré-rempli avec les données existantes
+  - Validation automatique
 - **Affichage** des missions actives par gendarme
+- **Suppression** avec confirmation
 
 #### 📍 Gestion des Lieux
 - Organisation hiérarchique : **Compagnies → Brigades**
@@ -713,6 +748,39 @@ npm run db:reset
 ---
 
 ## 📅 Historique des versions
+
+### Version 3.9 (2026-03-18)
+- ✅ **Import Excel du personnel (gendarmes)** :
+  - Modal d'import avec instructions claires
+  - Upload de fichier .xlsx, .xls, .ods
+  - Détection flexible des colonnes (Grade, Nom, Prénom)
+  - **Conversion automatique des grades abrégés** :
+    - Mapping complet de 13 grades (BRI→Brigadier, MDL→Maréchal-des-logis, etc.)
+    - Aperçu avec conversion visible avant import
+  - Génération automatique des matricules (GR0001, GR0002, etc.)
+  - Gestion intelligente des doublons (mise à jour si gendarme existe déjà par nom/prénom)
+  - Barre de progression bleue en temps réel
+  - Récapitulatif détaillé : succès, échecs, erreurs
+  - Event listeners pour fermeture du modal et upload de fichier
+- ✅ **Modification manuelle des gendarmes** :
+  - Bouton "Modifier" dans le tableau des gendarmes
+  - Formulaire pré-rempli avec toutes les données
+  - Modification de tous les champs (matricule, nom, prénom, grade, spécialité, contact)
+  - Validation et enregistrement via API PUT /api/gendarmes/:id
+- ✅ **Écrasement des missions à l'import** :
+  - Vérification du numéro de mission avant création
+  - Mise à jour automatique (PUT) si mission existe déjà
+  - Création (POST) si nouvelle mission
+  - Messages distincts dans la barre de progression ("Création..." / "Mise à jour...")
+- ✅ **Amélioration de l'affichage des dates** :
+  - Format DD/MM/YYYY HH:mm dans toutes les vues (tableau missions, aperçu, export)
+  - Normalisation complète dans toutes les fonctions dayjs
+- ✅ **Bouton "Supprimer toutes les missions"** :
+  - Bouton rouge avec icône danger dans l'onglet Missions (admin)
+  - Double confirmation : alerte + saisie de texte "SUPPRIMER TOUT"
+  - Suppression une par une avec barre de progression rouge
+  - Endpoint API DELETE /api/missions/all
+  - Affichage du nombre de missions supprimées
 
 ### Version 3.8 (2026-03-06)
 - ✅ **Modification d'affectation de gendarme** :
