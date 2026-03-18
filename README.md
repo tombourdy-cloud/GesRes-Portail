@@ -234,21 +234,27 @@ L'application est maintenant **100% responsive** et optimisée pour tous les app
 
 #### 🎖️ Gestion des Affectations
 - Visualisation par mission des effectifs requis
+- **Assignation rapide avec recherche** :
+  - Barre de recherche pour filtrer les gendarmes (nom, prénom, grade)
+  - Liste déroulante scrollable (5 lignes visibles)
+  - Filtrage en temps réel pendant la saisie
 - Assignation de gendarmes (statut : libre → en attente → validé)
-- **Modification d'affectation** : Changer le gendarme assigné sur une mission
+- **Affichage simplifié** : Nom, Prénom et Grade (matricule masqué)
+- **Modification d'affectation** : Changer le gendarme assigné sur une mission avec recherche
 - États possibles :
   - **Libre** (gris) : place disponible
   - **En attente** (jaune) : gendarme proposé, validation requise
   - **Validé** (vert) : assignation confirmée
 - Actions disponibles par statut :
-  - **Place libre** : Assigner un gendarme
+  - **Place libre** : Rechercher et assigner un gendarme
   - **En attente** : Modifier, Valider, Rejeter
   - **Validé** : Modifier, Libérer
 - Workflow de modification :
   1. Cliquer sur "✏️ Modifier"
-  2. Choisir un nouveau gendarme dans le dropdown
-  3. Confirmer : le statut passe automatiquement à "En attente"
-  4. Valider l'assignation pour confirmation finale
+  2. Rechercher le nouveau gendarme (barre de recherche)
+  3. Choisir dans la liste filtrée
+  4. Confirmer : le statut passe automatiquement à "En attente"
+  5. Valider l'assignation pour confirmation finale
 
 #### 🎨 Personnalisation
 - **Logo/écusson personnalisable** :
@@ -749,6 +755,25 @@ npm run db:reset
 ---
 
 ## 📅 Historique des versions
+
+### Version 3.11 (2026-03-18)
+- ✅ **Amélioration import Excel des gendarmes** :
+  - Support de la colonne **"Nom d'usage"** en plus de "Nom" pour le nom de famille
+  - Détection automatique flexible des colonnes (nom, nom d'usage, prénom, grade)
+- ✅ **Suppression de l'affichage du matricule** lors de l'assignation :
+  - Affichage uniquement du **nom, prénom et grade** dans les assignations
+  - Interface épurée et plus lisible
+- ✅ **Barre de recherche pour assigner des gendarmes** :
+  - Champ de recherche en temps réel pour filtrer la liste des gendarmes
+  - Recherche par **nom, prénom ou grade**
+  - Liste déroulante avec 5 lignes visibles (scrollable)
+  - Filtrage instantané pendant la saisie
+  - Disponible lors de :
+    - L'assignation initiale (place libre)
+    - La modification d'une assignation existante
+- ✅ **Simplification de la fonction de recherche générale** :
+  - Recherche uniquement par nom, prénom et grade
+  - Suppression de la recherche par matricule, spécialité, téléphone, email
 
 ### Version 3.10 (2026-03-18)
 - ✅ **Simplification de la gestion des gendarmes** :

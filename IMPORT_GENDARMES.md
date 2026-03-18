@@ -19,8 +19,10 @@ Le fichier doit contenir **3 colonnes obligatoires** :
 | Colonne | Description | Exemple |
 |---------|-------------|---------|
 | **Grade** | Grade abrégé du gendarme | BRI, MDL, ADJ |
-| **Nom** | Nom de famille | Dupont |
+| **Nom** ou **Nom d'usage** | Nom de famille | Dupont |
 | **Prénom** | Prénom | Jean |
+
+**Note importante** : Le système reconnaît automatiquement les colonnes nommées "Nom" ou "Nom d'usage" comme le nom de famille du gendarme. Cette flexibilité permet d'importer directement des fichiers Excel provenant de différentes sources sans avoir à renommer les colonnes.
 
 ### Grades abrégés acceptés
 
