@@ -1400,6 +1400,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             await axios.put('/api/config/logo_url', { value: base64Data })
             document.getElementById('nav-logo').src = base64Data
             document.getElementById('current-logo-preview').src = base64Data
+            
+            // Sauvegarder dans localStorage pour synchronisation avec page volontaires
+            localStorage.setItem('customLogo', base64Data)
+            
             alert('✅ Logo téléversé et enregistré avec succès !')
             
             // Réinitialiser le formulaire
@@ -1417,6 +1421,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         await axios.put('/api/config/logo_url', { value: logoUrl })
         document.getElementById('nav-logo').src = logoUrl
         document.getElementById('current-logo-preview').src = logoUrl
+        
+        // Sauvegarder dans localStorage pour synchronisation avec page volontaires
+        localStorage.setItem('customLogo', logoUrl)
+        
         alert('✅ Logo mis à jour avec l\'URL fournie !')
         document.getElementById('logo-url').value = ''
       } 
@@ -1452,6 +1460,10 @@ async function resetLogo() {
     document.getElementById('logo-file').value = ''
     document.getElementById('logo-url').value = ''
     document.getElementById('file-preview').classList.add('hidden')
+    
+    // Supprimer du localStorage pour synchronisation avec page volontaires
+    localStorage.removeItem('customLogo')
+    
     alert('✅ Logo réinitialisé au logo par défaut')
   } catch (error) {
     alert('❌ Erreur : ' + error.message)
