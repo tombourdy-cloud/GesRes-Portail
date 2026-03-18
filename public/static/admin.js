@@ -1001,9 +1001,9 @@ async function viewAssignations(missionId) {
                   <input type="text" 
                          id="gendarme-search-${a.id}" 
                          placeholder="Rechercher un gendarme..." 
-                         class="text-sm border rounded px-2 py-1 w-64"
+                         class="text-sm border rounded px-2 py-1 w-96"
                          oninput="filterGendarmesForAssignation(${a.id})">
-                  <select id="gendarme-select-${a.id}" class="text-sm border rounded px-2 py-1 w-64" size="5">
+                  <select id="gendarme-select-${a.id}" class="text-sm border rounded px-2 py-1 w-96" size="5">
                     ${allGendarmes.map(g => `<option value="${g.id}">${g.prenom} ${g.nom} - ${g.grade}</option>`).join('')}
                   </select>
                   <button onclick="confirmAssign(${a.id}, ${missionId})" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" title="Assigner">
