@@ -27,6 +27,10 @@ Les missions expirées sont automatiquement gérées :
 #### Import massif du personnel (gendarmes)
 - **Formats acceptés** : .xlsx, .xls, .ods
 - **Colonnes requises** : Grade (abrégé), Nom ou Nom d'usage, Prénom
+- **Structure de table simplifiée** :
+  - **Champs utilisés** : Nom, Prénom, Grade
+  - **Champs supprimés** : Matricule, Spécialité, Téléphone, Email
+  - **Migration v3.12** : Table gendarmes allégée (3 champs essentiels + métadonnées)
 - **Détection intelligente des colonnes** : 
   - Reconnaissance automatique "Nom" ou "Nom d'usage" pour le nom de famille
   - Exclusion automatique de "Prénom" même s'il contient "nom"
@@ -47,8 +51,7 @@ Les missions expirées sont automatiquement gérées :
   - COL → Colonel
 - **Aperçu avec conversion** : Affichage des grades convertis avant import
 - **Gestion des doublons** : Mise à jour automatique si gendarme existe déjà (par nom/prénom)
-- **Matricule automatique** : Génération automatique (GR0001, GR0002, etc.)
-- **Pas de contrainte unique matricule** : Import sans erreur de duplication
+- **Sans contrainte matricule** : Plus d'erreur "Unique constraint failed"
 - **Barre de progression bleue** : Suivi en temps réel de l'import
 - **Feedback détaillé** : Nombre de gendarmes importés et erreurs
 
@@ -649,7 +652,11 @@ webapp/
 │       └── styles.css
 ├── migrations/
 │   ├── 0001_initial_schema.sql      # Schéma missions/gendarmes
-│   └── 0002_add_auth_brigades.sql   # Auth + brigades/compagnies
+│   ├── 0002_add_auth_brigades.sql   # Auth + brigades/compagnies
+│   ├── 0003_remove_brigade_fields.sql
+│   ├── 0004_fix_missions_nullable.sql
+│   ├── 0005_simplify_gendarmes.sql
+│   └── 0006_remove_gendarmes_extra_fields.sql  # Table gendarmes simplifiée (nom, prenom, grade)
 ├── seed.sql               # Données de test missions/gendarmes
 ├── seed_brigades.sql      # Données de test compagnies/brigades
 ├── fix_admin_user.sql     # Script de création compte admin
