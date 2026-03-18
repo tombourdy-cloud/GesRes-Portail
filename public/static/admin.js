@@ -582,11 +582,8 @@ function renderAdminGendarmes(gendarmes) {
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matricule</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Spécialité</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Missions actives</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
           </tr>
@@ -594,14 +591,8 @@ function renderAdminGendarmes(gendarmes) {
         <tbody class="bg-white divide-y divide-gray-200">
           ${gendarmes.map(g => `
             <tr class="hover:bg-gray-50">
-              <td class="px-4 py-3 font-mono text-sm">${g.matricule}</td>
               <td class="px-4 py-3 font-medium">${g.prenom} ${g.nom}</td>
               <td class="px-4 py-3 text-sm">${g.grade}</td>
-              <td class="px-4 py-3 text-sm">${g.specialite}</td>
-              <td class="px-4 py-3 text-sm">
-                ${g.telephone ? `<div><i class="fas fa-phone text-gray-400"></i> ${g.telephone}</div>` : ''}
-                ${g.email ? `<div class="text-xs"><i class="fas fa-envelope text-gray-400"></i> ${g.email}</div>` : ''}
-              </td>
               <td class="px-4 py-3">
                 <span class="px-2 py-1 text-xs rounded-full ${missionsCountByGendarme[g.id] > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}">
                   ${missionsCountByGendarme[g.id]} mission${missionsCountByGendarme[g.id] > 1 ? 's' : ''}
@@ -935,13 +926,9 @@ function editGendarme(gendarmeId) {
   const gendarme = allGendarmes.find(g => g.id === gendarmeId)
   if (!gendarme) return
   
-  document.getElementById('gendarme-matricule').value = gendarme.matricule
   document.getElementById('gendarme-nom').value = gendarme.nom
   document.getElementById('gendarme-prenom').value = gendarme.prenom
   document.getElementById('gendarme-grade').value = gendarme.grade
-  document.getElementById('gendarme-specialite').value = gendarme.specialite
-  document.getElementById('gendarme-telephone').value = gendarme.telephone
-  document.getElementById('gendarme-email').value = gendarme.email || ''
   
   document.getElementById('modal-gendarme').classList.remove('hidden')
 }
@@ -950,7 +937,7 @@ async function deleteGendarme(gendarmeId) {
   const gendarme = allGendarmes.find(g => g.id === gendarmeId)
   if (!gendarme) return
   
-  if (!confirm(`Voulez-vous vraiment supprimer le gendarme ${gendarme.prenom} ${gendarme.nom} (${gendarme.matricule}) ?`)) {
+  if (!confirm(`Voulez-vous vraiment supprimer le gendarme ${gendarme.prenom} ${gendarme.nom} ?`)) {
     return
   }
   
@@ -1318,14 +1305,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     e.preventDefault()
     console.log('📝 Formulaire gendarme soumis')
     
+    // Générer un matricule automatique pour la création
+    const matricule = editingGendarmeId ? 
+      allGendarmes.find(g => g.id === editingGendarmeId).matricule : 
+      `GR${String(allGendarmes.length + 1).padStart(4, '0')}`
+    
     const data = {
-      matricule: document.getElementById('gendarme-matricule').value,
+      matricule: matricule,
       nom: document.getElementById('gendarme-nom').value,
       prenom: document.getElementById('gendarme-prenom').value,
       grade: document.getElementById('gendarme-grade').value,
-      specialite: document.getElementById('gendarme-specialite').value,
-      telephone: document.getElementById('gendarme-telephone').value,
-      email: document.getElementById('gendarme-email').value || null
+      specialite: '',
+      telephone: '',
+      email: ''
     }
     
     console.log('📦 Données gendarme:', data)
@@ -1901,11 +1893,16 @@ function injectModals() {
         <form id="form-gendarme">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-2">Matricule *</label>
-              <input type="text" id="gendarme-matricule" required placeholder="GR001"
+              <label class="block text-sm font-medium mb-2">Nom *</label>
+              <input type="text" id="gendarme-nom" required
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
+              <label class="block text-sm font-medium mb-2">Prénom *</label>
+              <input type="text" id="gendarme-prenom" required
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="md:col-span-2">
               <label class="block text-sm font-medium mb-2">Grade *</label>
               <select id="gendarme-grade" required
                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -1926,31 +1923,6 @@ function injectModals() {
                 <option value="Colonel">Colonel</option>
                 <option value="Général">Général</option>
               </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2">Nom *</label>
-              <input type="text" id="gendarme-nom" required
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2">Prénom *</label>
-              <input type="text" id="gendarme-prenom" required
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium mb-2">Spécialité</label>
-              <input type="text" id="gendarme-specialite" placeholder="Ex: Maître-chien"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2">Téléphone</label>
-              <input type="tel" id="gendarme-telephone"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2">Email</label>
-              <input type="email" id="gendarme-email"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
           </div>
           <div class="mt-6 flex justify-end space-x-3">
