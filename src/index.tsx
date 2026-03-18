@@ -290,6 +290,9 @@ app.get('/admin', (c) => {
                         <button onclick="showImportGendarmesModal()" class="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 whitespace-nowrap text-sm sm:text-base">
                             <i class="fas fa-file-excel mr-2"></i>Importer Excel
                         </button>
+                        <button onclick="deleteAllGendarmes()" class="px-4 sm:px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 whitespace-nowrap text-sm sm:text-base">
+                            <i class="fas fa-trash-alt mr-2"></i>Supprimer tous
+                        </button>
                     </div>
                 </div>
                 <div id="gendarmes-table-container"></div>

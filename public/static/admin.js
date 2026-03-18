@@ -3727,3 +3727,103 @@ async function startImportGendarmes() {
   importedGendarmes = []
 }
 
+// Fonction pour supprimer tous les gendarmes
+async function deleteAllGendarmes() {
+  // Demander confirmation
+  const confirmation = confirm('⚠️ ATTENTION : Voulez-vous vraiment supprimer TOUS les gendarmes de la base de données ?\n\nCette action est IRRÉVERSIBLE et supprimera également toutes les assignations associées.')
+  
+  if (!confirmation) {
+    return
+  }
+  
+  // Deuxième confirmation avec saisie
+  const typedConfirmation = prompt('Pour confirmer, tapez "SUPPRIMER TOUT" en majuscules :')
+  
+  if (typedConfirmation !== 'SUPPRIMER TOUT') {
+    alert('❌ Suppression annulée.')
+    return
+  }
+  
+  try {
+    // Afficher une barre de progression
+    const progressDiv = document.createElement('div')
+    progressDiv.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50'
+    progressDiv.innerHTML = `
+      <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold mb-4 text-red-600">
+          <i class="fas fa-trash-alt mr-2"></i>Suppression en cours...
+        </h3>
+        <div class="w-full bg-gray-200 rounded-full h-4 mb-4">
+          <div id="delete-progress-bar" class="bg-red-600 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p id="delete-progress-status" class="text-center text-gray-700">Récupération des gendarmes...</p>
+      </div>
+    `
+    document.body.appendChild(progressDiv)
+    
+    // Récupérer tous les gendarmes
+    const response = await axios.get('/api/gendarmes')
+    const gendarmes = response.data
+    const total = gendarmes.length
+    
+    if (total === 0) {
+      document.body.removeChild(progressDiv)
+      alert('ℹ️ Aucun gendarme à supprimer.')
+      return
+    }
+    
+    document.getElementById('delete-progress-status').textContent = `Suppression de ${total} gendarmes...`
+    
+    let deleted = 0
+    const errors = []
+    
+    // Supprimer chaque gendarme
+    for (let i = 0; i < gendarmes.length; i++) {
+      const gendarme = gendarmes[i]
+      
+      try {
+        await axios.delete(`/api/gendarmes/${gendarme.id}`)
+        deleted++
+        
+        // Mettre à jour la barre de progression
+        const progress = ((i + 1) / total) * 100
+        document.getElementById('delete-progress-bar').style.width = `${progress}%`
+        document.getElementById('delete-progress-status').textContent = `Suppression : ${deleted}/${total}`
+        
+        // Petit délai pour éviter de surcharger l'API
+        await new Promise(resolve => setTimeout(resolve, 50))
+      } catch (error) {
+        errors.push(`${gendarme.prenom} ${gendarme.nom}: ${error.response?.data?.error || error.message}`)
+        console.error(`Erreur suppression ${gendarme.nom}:`, error)
+      }
+    }
+    
+    // Supprimer la barre de progression
+    document.body.removeChild(progressDiv)
+    
+    // Afficher le résumé
+    let message = `✅ Suppression terminée !\n\n`
+    message += `• ${deleted} gendarmes supprimés\n`
+    if (errors.length > 0) {
+      message += `• ${errors.length} erreurs\n\n`
+      message += `Erreurs :\n${errors.slice(0, 5).join('\n')}`
+      if (errors.length > 5) {
+        message += `\n... et ${errors.length - 5} autres erreurs`
+      }
+    }
+    
+    alert(message)
+    
+    // Recharger la liste
+    const refreshResponse = await axios.get('/api/gendarmes')
+    allGendarmes = refreshResponse.data
+    filteredGendarmes = allGendarmes
+    renderAdminGendarmes(filteredGendarmes)
+    
+  } catch (error) {
+    console.error('Erreur lors de la suppression massive:', error)
+    alert('❌ Erreur lors de la suppression massive : ' + (error.response?.data?.error || error.message))
+  }
+}
+
+
