@@ -616,7 +616,7 @@ function renderMissionCard(m) {
                     </div>
                     <div>
                       <div class="font-medium text-gray-900">${g.prenom} ${g.nom}</div>
-                      <div class="text-xs text-gray-500">${g.grade} · ${g.matricule}</div>
+                      <div class="text-xs text-gray-500">${g.grade}</div>
                     </div>
                   </div>
                   <span class="px-3 py-1 text-xs font-medium rounded-full ${

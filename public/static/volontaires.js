@@ -285,7 +285,7 @@ function renderMissions() {
           ${mission.gendarmes_assignes && mission.gendarmes_assignes.length > 0 ? `
             <div class="text-xs text-gray-600 mb-2">
               <i class="fas fa-users mr-1"></i>
-              ${mission.gendarmes_assignes.map(g => `${g.nom} ${g.prenom}`).join(', ')}
+              ${mission.gendarmes_assignes.map(g => `${g.grade} ${g.prenom} ${g.nom}`).join(', ')}
             </div>
           ` : ''}
           
