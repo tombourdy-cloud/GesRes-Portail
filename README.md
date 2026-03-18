@@ -50,7 +50,14 @@ Les missions expirées sont automatiquement gérées :
   - LCL → Lieutenant-Colonel
   - COL → Colonel
 - **Aperçu avec conversion** : Affichage des grades convertis avant import
-- **Gestion des doublons** : Mise à jour automatique si gendarme existe déjà (par nom/prénom)
+- **Gestion des doublons** : 
+  - **Écrasement automatique** : Si un gendarme existe déjà (même nom+prénom), ses données sont **remplacées** par les nouvelles valeurs du fichier Excel
+  - Détection par nom/prénom (insensible à la casse)
+  - Mise à jour complète : nom, prénom, grade
+- **Suppression massive** : Bouton rouge "Supprimer tous" pour vider la base gendarmes
+  - Double confirmation (alert + saisie "SUPPRIMER TOUT")
+  - Barre de progression rouge en temps réel
+  - Suppression en cascade des assignations
 - **Sans contrainte matricule** : Plus d'erreur "Unique constraint failed"
 - **Barre de progression bleue** : Suivi en temps réel de l'import
 - **Feedback détaillé** : Nombre de gendarmes importés et erreurs
