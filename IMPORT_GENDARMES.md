@@ -117,9 +117,27 @@ Résultat : Matricule GR0042 conservé, grade mis à jour vers Brigadier
 
 ## Génération automatique des matricules
 
-- Si un gendarme n'existe pas, un matricule est généré automatiquement
+- **Les matricules sont générés automatiquement** lors de la création ou de l'import
 - Format : `GR` suivi d'un numéro séquentiel sur 4 chiffres
 - Exemples : `GR0001`, `GR0042`, `GR0153`
+- **Vous n'avez pas besoin de fournir de matricule** dans le fichier Excel
+- Le système gère automatiquement les matricules pour éviter les doublons
+
+## Champs simplifiés
+
+L'interface de gestion des gendarmes a été simplifiée pour se concentrer sur l'essentiel :
+
+### Champs visibles dans le tableau
+- **Nom et Prénom** : Identification du gendarme
+- **Grade** : Grade militaire
+- **Missions actives** : Nombre de missions en cours
+
+### Champs absents (par choix de simplification)
+- **Matricule** : Généré automatiquement, non affiché dans l'interface
+- **Spécialité** : Non utilisé
+- **Contact (téléphone, email)** : Non requis pour la gestion des missions
+
+Cette simplification permet une saisie plus rapide et une interface plus claire.
 
 ## Modification manuelle après import
 

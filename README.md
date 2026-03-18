@@ -189,15 +189,16 @@ L'application est maintenant **100% responsive** et optimisée pour tous les app
   - Aperçu avec conversion avant import
   - Barre de progression en temps réel
   - Gestion des doublons (mise à jour automatique)
+  - Génération automatique des matricules (GR0001, GR0002, etc.)
 - **Barre de recherche** en temps réel permettant de filtrer par :
-  - Matricule
   - Nom ou prénom
   - Grade
-  - Spécialité
-  - Téléphone ou email
-- **Liste complète** avec matricule, nom, grade, spécialité, contact
-- **Badge** indiquant le nombre de missions actives
+- **Tableau simplifié** avec :
+  - Nom et prénom
+  - Grade
+  - Nombre de missions actives
 - **Création manuelle** de nouveaux gendarmes avec :
+  - Nom et Prénom (requis)
   - **Grades officiels** (liste déroulante, dans l'ordre hiérarchique) :
     - Brigadier
     - Brigadier-Chef
@@ -214,11 +215,11 @@ L'application est maintenant **100% responsive** et optimisée pour tous les app
     - Lieutenant-Colonel
     - Colonel
     - Général
+  - Matricule généré automatiquement
 - **Modification manuelle** de gendarmes existants via bouton "Modifier"
-  - Possibilité de modifier tous les champs (matricule, nom, prénom, grade, spécialité, contact)
+  - Modification du nom, prénom et grade
   - Formulaire pré-rempli avec les données existantes
   - Validation automatique
-- **Affichage** des missions actives par gendarme
 - **Suppression** avec confirmation
 
 #### 📍 Gestion des Lieux
@@ -748,6 +749,17 @@ npm run db:reset
 ---
 
 ## 📅 Historique des versions
+
+### Version 3.10 (2026-03-18)
+- ✅ **Simplification de la gestion des gendarmes** :
+  - Suppression du champ **Matricule** de l'interface utilisateur (généré automatiquement)
+  - Suppression des champs **Contact** (téléphone, email) jugés non essentiels
+  - Suppression du champ **Spécialité** pour simplifier la saisie
+  - **Tableau simplifié** avec seulement : Nom, Grade, Missions actives, Actions
+  - **Modal de création/modification simplifié** avec seulement : Nom, Prénom, Grade
+  - Génération automatique du matricule : format `GR0001`, `GR0002`, etc.
+  - Amélioration de l'expérience utilisateur : formulaire plus rapide et épuré
+  - Conservation de la base de données complète (colonnes toujours présentes, valeurs vides)
 
 ### Version 3.9 (2026-03-18)
 - ✅ **Import Excel du personnel (gendarmes)** :
