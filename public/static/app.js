@@ -636,12 +636,18 @@ function renderMissionCard(m) {
 
 // ==================== MODAL BRIGADE INFO ====================
 function showBrigadeInfo(brigadeId) {
+  console.log('showBrigadeInfo appelé avec ID:', brigadeId)
+  console.log('allBrigades disponibles:', allBrigades.length)
+  
   const brigade = allBrigades.find(b => b.id === brigadeId)
   
   if (!brigade) {
-    alert('Brigade non trouvée')
+    console.error('Brigade non trouvée pour ID:', brigadeId)
+    alert('Brigade non trouvée (ID: ' + brigadeId + ')')
     return
   }
+  
+  console.log('Brigade trouvée:', brigade.nom)
   
   // Créer le modal
   const modal = document.createElement('div')
@@ -719,6 +725,7 @@ function showBrigadeInfo(brigadeId) {
   `
   
   document.body.appendChild(modal)
+  console.log('Modal ajouté au DOM')
 }
 
 function closeBrigadeInfo() {
