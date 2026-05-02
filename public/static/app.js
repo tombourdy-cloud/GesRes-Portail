@@ -563,7 +563,7 @@ function renderMissionCard(m) {
           <div class="space-y-2">
             <div class="flex items-center gap-2 text-sm text-gray-600">
               <i class="fas fa-map-marker-alt text-green-500 w-5"></i>
-              <span>${m.brigade_nom} (${m.brigade_code})</span>
+              <span class="cursor-pointer hover:text-green-600 hover:underline" onclick="showBrigadeInfo(${m.brigade_id})">${m.brigade_nom} (${m.brigade_code})</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-600">
               <i class="fas fa-building text-green-500 w-5"></i>
@@ -632,6 +632,100 @@ function renderMissionCard(m) {
       </div>
     </div>
   `
+}
+
+// ==================== MODAL BRIGADE INFO ====================
+function showBrigadeInfo(brigadeId) {
+  const brigade = allBrigades.find(b => b.id === brigadeId)
+  
+  if (!brigade) {
+    alert('Brigade non trouvée')
+    return
+  }
+  
+  // Créer le modal
+  const modal = document.createElement('div')
+  modal.id = 'modal-brigade-info'
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'
+  modal.onclick = (e) => {
+    if (e.target === modal) closeBrigadeInfo()
+  }
+  
+  modal.innerHTML = `
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative" onclick="event.stopPropagation()">
+      <button onclick="closeBrigadeInfo()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">
+        &times;
+      </button>
+      
+      <div class="mb-4">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white">
+            <i class="fas fa-map-marker-alt text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">${brigade.nom}</h3>
+            <p class="text-sm text-gray-500">Code: ${brigade.code}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="space-y-4">
+        ${brigade.adresse ? `
+          <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+            <i class="fas fa-map-marker-alt text-green-600 text-lg mt-1"></i>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 mb-1">Adresse</p>
+              <p class="text-sm text-gray-600">${brigade.adresse}</p>
+            </div>
+          </div>
+        ` : ''}
+        
+        ${brigade.telephone ? `
+          <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+            <i class="fas fa-phone text-green-600 text-lg mt-1"></i>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 mb-1">Téléphone</p>
+              <a href="tel:${brigade.telephone}" class="text-sm text-green-600 hover:text-green-700 font-medium">
+                ${brigade.telephone}
+              </a>
+            </div>
+          </div>
+        ` : ''}
+        
+        ${brigade.chef_brigade ? `
+          <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+            <i class="fas fa-user text-green-600 text-lg mt-1"></i>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 mb-1">Chef de brigade</p>
+              <p class="text-sm text-gray-600">${brigade.chef_brigade}</p>
+            </div>
+          </div>
+        ` : ''}
+        
+        ${!brigade.adresse && !brigade.telephone && !brigade.chef_brigade ? `
+          <div class="text-center py-4 text-gray-500">
+            <i class="fas fa-info-circle text-3xl mb-2"></i>
+            <p class="text-sm">Aucune information complémentaire disponible</p>
+          </div>
+        ` : ''}
+      </div>
+      
+      <div class="mt-6">
+        <button onclick="closeBrigadeInfo()" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+          Fermer
+        </button>
+      </div>
+    </div>
+  `
+  
+  document.body.appendChild(modal)
+}
+
+function closeBrigadeInfo() {
+  const modal = document.getElementById('modal-brigade-info')
+  if (modal) {
+    document.body.removeChild(modal)
+  }
 }
 
 // ==================== NAVIGATION ====================
